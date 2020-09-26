@@ -1,0 +1,81 @@
+Disassembly Listing for Lab2
+Generated From:
+C:/Users/sageh/OneDrive/Documents/5067/Lab 2/Lab2.X/dist/default/production/Lab2.X.production.cof
+Sep 15, 2020 9:23:37 PM
+
+---  C:/Users/sageh/OneDrive/Documents/5067/Lab 2/Lab2.X/Lab2_Herrin.asm  -------------------------------
+                                                  1:     ;;;;;;; Lab 2 template for ASEN 4067/5067 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+                                                  2:     ;
+                                                  3:     ;	Created:	Scott Palo (scott.palo@colorado.edu)
+                                                  4:     ;	original:	10-SEP-06
+                                                  5:     ;	Updated:	Sahe0971@colorado.edu	
+                                                  6:     ;	Modified:	10-SEP-20
+                                                  7:     ;
+                                                  8:     ;	This file provides a basic assembly programming template
+                                                  9:     ;
+                                                  10:    ;;;;;;; Program hierarchy ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+                                                  11:    ;
+                                                  12:    ; Mainline
+                                                  13:    ;   Initial
+                                                  14:    ;
+                                                  15:    ;;;;;;; Assembler directives ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+                                                  16:    
+                                                  17:            list  P=PIC18F87K22, F=INHX32, C=160, N=0, ST=OFF, MM=OFF, R=DEC, X=ON
+                                                  18:            #include p18f87k22.inc
+                                                  19:    ;		After MPLAB X all configuration bits are set in the code
+                                                  20:    ;		Use mplab help to understand what these directives mean
+                                                  21:    		CONFIG	FOSC = HS1
+                                                  22:    		CONFIG	PWRTEN = ON, BOREN = ON, BORV = 1, WDTEN = OFF
+                                                  23:    		CONFIG	CCP2MX = PORTC, XINST = OFF
+                                                  24:    
+                                                  25:    ;;;;;;; Variables ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+                                                  26:    
+                                                  27:            cblock  0x000       ;
+                                                  28:    	count 
+                                                  29:            endc		    ; A good place to store variables, none here yet
+                                                  30:    
+                                                  31:    ;;;;;;; Macro definitions ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+                                                  32:    
+                                                  33:    
+                                                  34:    ;;;;;;; Vectors ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+                                                  35:    
+                                                  36:            org  0x0000         ; Reset vector
+0000  0000     NOP                                37:            nop		    ; No operation, wastes one instruction cycle
+0002  EF0E     GOTO 0x1C                          38:            goto  Mainline	    ; Send program to Mainline code
+0004  F000     NOP
+                                                  39:    	
+                                                  40:            org  0x0008         ; High priority interrupt vector
+0008  EF04     GOTO 0x8                           41:            goto  $             ; $ returns code to the current program counter
+000A  F000     NOP
+                                                  42:    
+                                                  43:            org  0x0018	    ; Low priority interrupt vector
+0018  EF0C     GOTO 0x18                          44:            goto  $             ; Returns. Only here to show code structure.
+001A  F000     NOP
+                                                  45:    
+                                                  46:    ;;;;;;; Mainline program ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+                                                  47:    
+                                                  48:    Mainline
+001C  D807     RCALL 0x2C                         49:            rcall  	Initial     ; Initialize everything
+                                                  50:    Loop
+001E  708C     BTG LATD, 0, ACCESS                51:            btg  	LATD,0      ; Toggle pin, to support measuring loop time
+0020  2AE8     INCF WREG, F, ACCESS               52:    	incf	WREG 
+0022  26E8     ADDWF WREG, F, ACCESS              53:    	addwf	WREG
+0024  6CE8     NEGF WREG, ACCESS                  54:    	negf	WREG	
+0026  36E8     RLCF WREG, F, ACCESS               55:    	rlcf	WREG
+0028  6E00     MOVWF 0x0, ACCESS                  56:    	movwf	count,0
+002A  D7F9     BRA 0x1E                           57:    	bra  	Loop
+                                                  58:    
+                                                  59:    ;;;;;;; Initial subroutine ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+                                                  60:    ;
+                                                  61:    ; This subroutine performs all initializations of variables and registers.
+                                                  62:    
+                                                  63:    Initial
+002C  0EFA     MOVLW 0xFA                         64:    	movlw	B'11111010'
+002E  0F38     ADDLW 0x38                         65:    	addlw	0x38
+0030  0EC0     MOVLW 0xC0                         66:            movlw  	B'11000000' ; Move I/O values for PORTD into WREG
+0032  6E95     MOVWF TRISD, ACCESS                67:    	movwf  	TRISD	    ; Set I/O (TRISD)for PORTD
+0034  6A8C     CLRF LATD, ACCESS                  68:    	clrf  	LATD	    ; Drive all OUTPUTS on port D to zero
+0036  0E01     MOVLW 0x1                          69:    	movlw	B'00000001' ; Move literal value of 1 to WREG
+0038  0012     RETURN 0                           70:            return
+                                                  71:    
+                                                  72:            end

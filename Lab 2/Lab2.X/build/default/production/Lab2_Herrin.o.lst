@@ -1,0 +1,108 @@
+MPASM 5.84                   LAB2_HERRIN.ASM   9-15-2020  23:45:38         PAGE  1
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+                      00001 ;;;;;;; Lab 2 template for ASEN 4067/5067 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+                      00002 ;
+                      00003 ;       Created:        Scott Palo (scott.palo@colorado.edu)
+                      00004 ;       original:       10-SEP-06
+                      00005 ;       Updated:        Sahe0971@colorado.edu   
+                      00006 ;       Modified:       10-SEP-20
+                      00007 ;
+                      00008 ;       This file provides a basic assembly programming template
+                      00009 ;
+                      00010 ;;;;;;; Program hierarchy ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+                      00011 ;
+                      00012 ; Mainline
+                      00013 ;   Initial
+                      00014 ;
+                      00015 ;;;;;;; Assembler directives ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+                      00016 
+                      00017         list  P=PIC18F87K22, F=INHX32, C=160, N=0, ST=OFF, MM=OFF, R=DEC, X=ON
+                      00018         #include p18f87k22.inc
+                      00001         LIST
+                      00002 
+                      00003 ;==========================================================================
+                      00004 ; Build date : Mar 17 2019
+                      00005 ;  MPASM PIC18F87K22 processor include
+                      00006 ; 
+                      00007 ;  (c) Copyright 1999-2019 Microchip Technology, All rights reserved
+                      00008 ;==========================================================================
+                      00009 
+                      02986         LIST
+                      00019 ;               After MPLAB X all configuration bits are set in the code
+                      00020 ;               Use mplab help to understand what these directives mean
+1D 03 6A 7C F9 8B 91 F00021                 CONFIG  FOSC = HS1
+       F C0 FF E0 FF 4
+       0 
+                      00022                 CONFIG  PWRTEN = ON, BOREN = ON, BORV = 1, WDTEN = OFF
+                      00023                 CONFIG  CCP2MX = PORTC, XINST = OFF
+                      00024                 
+                      00025 
+                      00026 ;;;;;;; Variables ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+                      00027 
+                      00028         cblock  0x000       ;
+                      00029          
+                      00030         endc                ; A good place to store variables, none here yet
+                      00031 
+                      00032 ;;;;;;; Macro definitions ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+                      00033 
+                      00034 
+                      00035 ;;;;;;; Vectors ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+                      00036 
+000000                00037         org  0x0000         ; Reset vector
+000000 0000           00038         nop                 ; No operation, wastes one instruction cycle
+000002 EF0E F000      00039         goto  Mainline      ; Send program to Mainline code
+                      00040         
+000008                00041         org  0x0008         ; High priority interrupt vector
+000008 EF04 F000      00042         goto  $             ; $ returns code to the current program counter
+                      00043 
+000018                00044         org  0x0018         ; Low priority interrupt vector
+000018 EF0C F000      00045         goto  $             ; Returns. Only here to show code structure.
+                      00046         
+                      00047                 
+                      00048 
+                      00049 ;;;;;;; Mainline program ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+                      00050 
+00001C                00051 Mainline
+00001C D806           00052         rcall   Initial     ; Initialize everything
+00001E                00053 Loop
+00001E 708C           00054         btg     LATD,0      ; Toggle pin, to support measuring loop time
+000020 2AE8           00055         incf    WREG 
+000022 26E8           00056         addwf   WREG
+000024 6CE8           00057         negf    WREG    
+000026 36E8           00058         rlcf    WREG
+000028 D7FA           00059         bra     Loop
+                      00060 
+                      00061 ;;;;;;; Initial subroutine ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+                      00062 ;
+                      00063 ; This subroutine performs all initializations of variables and registers.
+                      00064 
+00002A                00065 Initial
+  00000000            00066 reg0    equ 0x00
+  00000001            00067 reg1    equ 0x01
+  00000002            00068 reg2    equ 0x02
+  00000003            00069 reg3    equ 0x03
+  00000010            00070 reg10   equ 0x10
+  00000011            00071 reg11   equ 0x11
+00002A 5000           00072         movf    reg0,0,0
+00002C 2402           00073         addwf   reg2,0,0
+00002E 6E10           00074         movwf   reg10,0
+000030 5001           00075         movf    reg1,0,0
+000032 2003           00076         addwfc  reg3,0,0
+000034 6E11           00077         movwf   reg11,0
+000036 0EC0           00078         movlw   B'11000000' ; Move I/O values for PORTD into WREG
+000038 6E95           00079         movwf   TRISD       ; Set I/O (TRISD)for PORTD
+00003A 6A8C           00080         clrf    LATD        ; Drive all OUTPUTS on port D to zero
+00003C 0E01           00081         movlw   B'00000001' ; Move literal value of 1 to WREG
+00003E 0012           00082         return
+                      00083 
+                      00084         end
+
+Errors   :     0
+Warnings :     0 reported,     0 suppressed
+Messages :     0 reported,     0 suppressed
+
+

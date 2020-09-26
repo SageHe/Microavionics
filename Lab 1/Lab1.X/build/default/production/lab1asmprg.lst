@@ -1,0 +1,111 @@
+MPASM 5.84                    LAB1ASMPRG.ASM   8-26-2020  23:52:06         PAGE  1
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+                      00001 ;;;;;;; Lab 1 assembly program for ASEN 4519/5519 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+                      00002 ;
+                      00003 ;       Created:    Scott Palo (scott.palo@colorado.edu)
+                      00004 ;       Modified:   Doug Weibel (dowe2010@colorado.edu)
+                      00005 ;       Modified:   Trudy Schwartz (trudy.schwartz@colorado.edu)
+                      00006 ;       Original:   10-Sept-06
+                      00007 ;       Modified:   9-Aug-17
+                      00008 ;
+                      00009 ;       This file provides a basic assembly program
+                      00010 ;
+                      00011 ;;;;;;; Program hierarchy ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+                      00012 ;
+                      00013 ; Mainline
+                      00014 ;   Initial
+                      00015 ;
+                      00016 ;;;;;;; Assembler directives ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+                      00017 ;               Use mplab help to understand what these directives mean
+                      00018 
+                      00019         list  P=PIC18F87K22, F=INHX32, C=160, N=0, ST=OFF, MM=OFF, R=DEC, X=ON
+                      00020         #include P18F87K22.inc
+                      00001         LIST
+                      00002 
+                      00003 ;==========================================================================
+                      00004 ; Build date : Mar 17 2019
+                      00005 ;  MPASM PIC18F87K22 processor include
+                      00006 ; 
+                      00007 ;  (c) Copyright 1999-2019 Microchip Technology, All rights reserved
+                      00008 ;==========================================================================
+                      00009 
+                      02986         LIST
+                      00021                 
+                      00022 ;               After MPLAB X all configuration bits are set in the code
+                      00023 ;               Use the "CONFIG" MPASM assembler directive:     
+                      00024                 CONFIG  FOSC = HS1
+                      00025                 CONFIG  PWRTEN = ON, BOREN = ON, BORV = 1, WDTEN = OFF
+                      00026                 CONFIG  CCP2MX = PORTC, XINST = OFF
+                      00027 
+                      00028 
+                      00029 ;;;;;;; Variables ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+                      00030 
+                      00031         cblock  0x000           ; Beginning of Access RAM
+                      00032                                 ; A good place to store variables, none here yet
+                      00033         endc
+                      00034 
+                      00035 ;;;;;;; Macro definitions ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+                      00036 
+                      00037 ; MOVLF is a macro that puts a literal value into a GPR or SFR
+                      00038 MOVLF   macro  literal,dest
+                      00039         movlw  literal
+                      00040         movwf  dest
+                      00041         endm
+                      00042 
+                      00043 ;;;;;;; Vectors ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+                      00044 
+                      00045         org  0x0000             ; Reset vector
+000000 0000           00046         nop                     ; No operation, wastes one instruction cycle
+000002 EF?? F???      00047         goto  Mainline          ; Send program to Mainline code
+                      00048 
+                      00049         org  0x0008             ; High priority interrupt vector
+000008 EF?? F???      00050         goto  $                 ; Goto $ points code to the current program counter
+                      00051                                 ; Currently this code just returns to where it was in
+                      00052                                 ; the mainline as a place holder to show code structure.
+                      00053                                 ; Later this will goto High Priority Interrupt Service Routine code
+                      00054 
+                      00055         org  0x0018             ; Low priority interrupt vector
+000018 EF?? F???      00056         goto  $                 ; Ditto, this will later point to Low Priority Service Routine code.
+                      00057 
+                      00058 ;;;;;;; Mainline program ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+                      00059 
+00001C                00060 Mainline
+00001C D???           00061         rcall   Initial          ; Call Initial function to initialize everything
+00001E                00062 Loop
+00001E 5083           00063         movf    PORTD,0          ; Read switch value into WREG
+000020 0B08           00064         andlw   B'00001000'      ; Bitwise AND operation to isolate RD3
+000022 E0??           00065         bz      SWT_ON           ; Branch if switch is on
+000024 9E8A           00066         bcf     LATB,7           ; Otherwise turn LED RB7 off
+000026 D???           00067         bra     END1             ; Then branch to the END1 label        
+000028                00068 SWT_ON
+000028 8E8A           00069         bsf     LATB,7           ; Turn LED RB7 on
+00002A                00070 END1
+00002A D???           00071                 bra     Loop
+                      00072 
+                      00073 ;;;;;;; Initial subroutine ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+                      00074 ;
+                      00075 ; This subroutine performs all initializations of variables and registers.
+                      00076 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+                      00077 
+00002C                00078 Initial
+                      00079         MOVLF   B'00000000',TRISB   ; Set TRIS B I/O state
+00002C 0E00               M         movlw  B'00000000'
+00002E 6E93               M         movwf  TRISB
+                      00080                 MOVLF   B'00001000',TRISD   ; Set TRIS D I/O state
+000030 0E08               M         movlw  B'00001000'
+000032 6E95               M         movwf  TRISD
+                      00081                 MOVLF   B'00000000',LATB    ; Turn off LEDS on PORTB
+000034 0E00               M         movlw  B'00000000'
+000036 6E8A               M         movwf  LATB
+000038 0012           00082         return        
+                      00083         end
+
+Errors   :     0
+Warnings :     0 reported,     0 suppressed
+Messages :     0 reported,     0 suppressed
+
+
