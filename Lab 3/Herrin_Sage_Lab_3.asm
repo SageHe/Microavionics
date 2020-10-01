@@ -28,7 +28,7 @@
 ;
 ;;;;;;; Assembler directives ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-        LIST  P=PIC18F87K22, F=INHX32, C=160, N=0, ST=OFF, MM=OFF, R=DEC, X=ON
+        LIST  P=PIC18F87K22, F=INHX32, C=160, N=0, ST=OFF, MM=OFF, R=DEC, X=OFF
         #include P18F87K22.inc
 
 ;		MPLAB configuration directives
@@ -74,8 +74,9 @@ MOVLF   macro  literal,dest
 Mainline
         rcall  Initial          ;Jump to initialization routine
 Loop
-; PUT YOUR CODE HERE
-        ;MOVLF			; Add operand to finish the use of this macro 
+        RCALL	Wait1sec
+	BTG	LATD,4
+				; Add operand to finish the use of this macro 
 	bra  Loop		; Main loop should run forever after entry
 
 ;;;;;;; Initial subroutine ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -83,19 +84,33 @@ Loop
 ; This subroutine performs all initializations of variables and registers.
 
 Initial
-	MOVLF	B'00001111',TRISD; Set TRISD
-		; Set TRISJ
+reg1	equ 0x01
+reg2	equ 0x02	
+	MOVLF	D'2',reg2
+reg3	equ 0x03	
+reg4	equ 0x07
+	MOVLF	D'5',reg4
+reg5	equ 0x09
+	MOVLF	D'2',reg5
+ledrj2	equ 0x04
+ledrj3	equ 0x05	
+on	equ 0x06	
+temp	equ 0x08
+	MOVLF	D'0',on
+	MOVLF	B'00001011',TRISD; Set TRISD - check that this and TRISJ are set right 
+	MOVLF	B'00000000',TRISJ; Set TRISJ
 	MOVLF	B'00000000',LATD; Turn off all LEDS
 	RCALL	Wait1sec; call subroutine to wait 1 second
 	MOVLF	B'00100000',LATD; Turn ON RD5
-		; call subroutine to wait 1 second
+	RCALL   Wait1sec; call subroutine to wait 1 second
 	MOVLF	B'00000000',LATD; Turn OFF RD5
 	MOVLF	B'01000000',LATD; Turn ON RD6
-		; call subroutine to wait 1 second
+	RCALL	Wait1sec; call subroutine to wait 1 second
 	MOVLF	B'00000000',LATD; Turn OFF RD6
 	MOVLF	B'10000000',LATD; Turn ON RD7
-		; call subroutine to wait 1 second
-		; Turn OFF RD7
+	RCALL   Wait1sec; call subroutine to wait 1 second
+	MOVLF	B'00000000',LATD; Turn OFF RD7
+	RCALL	Loop
         return
 
 ;;;;;;; WaitXXXms subroutine ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -105,8 +120,15 @@ Initial
 ; Choose a suitable value to decrement a counter in a loop structure and 
 ; not using an excessive amount of program memory - i.e. don't use 100 nop's
 		
-WaitXXXms
-		; Add code here
+Wait1ms
+loop2		; Add code here - assume for now that this is a 2ms loop, fix later
+	MOVLF	D'4',reg1
+	
+loop1
+	DECF	reg1,1
+	BNZ	loop1
+	DECF	reg2,1
+	BNZ	loop2
 		return
 
 ;;;;;;; Wait1sec subroutine ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -114,12 +136,16 @@ WaitXXXms
 ; Subroutine to wait 1 sec based on calling WaitXXXms YYY times or up to 3 nested loops
 				
 Wait1sec
-	reg1	equ 0x01 ; Add code here
-	MOVLF	D'200',reg1
-loop1	
-	DECF	reg1,1
-	nop
-	BNZ	loop1
+loop5
+	MOVLF	D'4',reg3	
+loop3
+	RCALL	Wait1ms	
+	RCALL	Check_RPG
+	RCALL	Check_SW1
+	DECF	reg3,1
+	BNZ	loop3
+	DECF	reg5,1
+	BNZ	loop5; Add code here
 		return
 
 ;;;;;;; Check_SW1 subroutine ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -127,7 +153,17 @@ loop1
 ; Subroutine to check the status of RD3 button and change RD2 (ASEN5519 ONLY)
 				
 Check_SW1
-		; Add code here
+	BTFSS	PORTD,3	; Add code here
+	BRA	ds
+	BTFSS	on,3
+	RCALL	Debounce
+	MOVLF	B'00001000',on
+ds
+	MOVF	PORTD,0	
+	ANDLW	B'00001000'
+	SUBWF	on,0
+	BTFSC	WREG,3
+	RCALL	onoff
 		return
 
 ;;;;;;; Check_RPG subroutine ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -135,8 +171,26 @@ Check_SW1
 ; Subroutine to read the values of the RPG and display on RJ2 and RJ3
 				
 Check_RPG
-		; Add code here
-		return      
-        
+	MOVF	PORTD,0
+	RLNCF	WREG
+	RLNCF	WREG
+	ANDLW	B'00001100'
+	MOVWF	LATJ,0	
+		return	; Add code here
+		      
+
+		
+Debounce
+loop4
+	RCALL	Wait1ms
+	DECF	reg4,1
+	BNZ	loop4
+		return
+		
+		
+onoff
+	BTG	LATD,2	 
+	CLRF	on
+		return
 
         end

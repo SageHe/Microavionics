@@ -1,5 +1,5 @@
 MPLINK 5.09, LINKER
-Linker Map File - Created Wed Aug 26 23:52:07 2020
+Linker Map File - Created Mon Sep 28 21:58:40 2020
 
                                  Section Info
                   Section       Type    Address   Location Size(Bytes)
@@ -30,25 +30,25 @@ Linker Map File - Created Wed Aug 26 23:52:07 2020
                               Symbols - Sorted by Name
                      Name    Address   Location    Storage File                     
                 ---------  ---------  ---------  --------- ---------                
-                     END1   0x00002a    program     static C:\Users\sageh\OneDrive\Documents\5067\Lab 1\Lab1.X\lab1asmprg.asm
-                  Initial   0x00002c    program     static C:\Users\sageh\OneDrive\Documents\5067\Lab 1\Lab1.X\lab1asmprg.asm
-                     Loop   0x00001e    program     static C:\Users\sageh\OneDrive\Documents\5067\Lab 1\Lab1.X\lab1asmprg.asm
-                 Mainline   0x00001c    program     static C:\Users\sageh\OneDrive\Documents\5067\Lab 1\Lab1.X\lab1asmprg.asm
-                   SWT_ON   0x000028    program     static C:\Users\sageh\OneDrive\Documents\5067\Lab 1\Lab1.X\lab1asmprg.asm
-             _.org_1_0008   0x000008    program     static C:\Users\sageh\OneDrive\Documents\5067\Lab 1\Lab1.X\lab1asmprg.asm
-             _.org_2_0018   0x000018    program     static C:\Users\sageh\OneDrive\Documents\5067\Lab 1\Lab1.X\lab1asmprg.asm
+                     END1   0x00002a    program     static C:\Users\sageh\Documents\5067\Lab 1\Lab1.X\lab1asmprg.asm
+                  Initial   0x00002c    program     static C:\Users\sageh\Documents\5067\Lab 1\Lab1.X\lab1asmprg.asm
+                     Loop   0x00001e    program     static C:\Users\sageh\Documents\5067\Lab 1\Lab1.X\lab1asmprg.asm
+                 Mainline   0x00001c    program     static C:\Users\sageh\Documents\5067\Lab 1\Lab1.X\lab1asmprg.asm
+                   SWT_ON   0x000028    program     static C:\Users\sageh\Documents\5067\Lab 1\Lab1.X\lab1asmprg.asm
+             _.org_1_0008   0x000008    program     static C:\Users\sageh\Documents\5067\Lab 1\Lab1.X\lab1asmprg.asm
+             _.org_2_0018   0x000018    program     static C:\Users\sageh\Documents\5067\Lab 1\Lab1.X\lab1asmprg.asm
 
 
 
                               Symbols - Sorted by Address
                      Name    Address   Location    Storage File                     
                 ---------  ---------  ---------  --------- ---------                
-             _.org_1_0008   0x000008    program     static C:\Users\sageh\OneDrive\Documents\5067\Lab 1\Lab1.X\lab1asmprg.asm
-             _.org_2_0018   0x000018    program     static C:\Users\sageh\OneDrive\Documents\5067\Lab 1\Lab1.X\lab1asmprg.asm
-                 Mainline   0x00001c    program     static C:\Users\sageh\OneDrive\Documents\5067\Lab 1\Lab1.X\lab1asmprg.asm
-                     Loop   0x00001e    program     static C:\Users\sageh\OneDrive\Documents\5067\Lab 1\Lab1.X\lab1asmprg.asm
-                   SWT_ON   0x000028    program     static C:\Users\sageh\OneDrive\Documents\5067\Lab 1\Lab1.X\lab1asmprg.asm
-                     END1   0x00002a    program     static C:\Users\sageh\OneDrive\Documents\5067\Lab 1\Lab1.X\lab1asmprg.asm
-                  Initial   0x00002c    program     static C:\Users\sageh\OneDrive\Documents\5067\Lab 1\Lab1.X\lab1asmprg.asm
+             _.org_1_0008   0x000008    program     static C:\Users\sageh\Documents\5067\Lab 1\Lab1.X\lab1asmprg.asm
+             _.org_2_0018   0x000018    program     static C:\Users\sageh\Documents\5067\Lab 1\Lab1.X\lab1asmprg.asm
+                 Mainline   0x00001c    program     static C:\Users\sageh\Documents\5067\Lab 1\Lab1.X\lab1asmprg.asm
+                     Loop   0x00001e    program     static C:\Users\sageh\Documents\5067\Lab 1\Lab1.X\lab1asmprg.asm
+                   SWT_ON   0x000028    program     static C:\Users\sageh\Documents\5067\Lab 1\Lab1.X\lab1asmprg.asm
+                     END1   0x00002a    program     static C:\Users\sageh\Documents\5067\Lab 1\Lab1.X\lab1asmprg.asm
+                  Initial   0x00002c    program     static C:\Users\sageh\Documents\5067\Lab 1\Lab1.X\lab1asmprg.asm
 
 

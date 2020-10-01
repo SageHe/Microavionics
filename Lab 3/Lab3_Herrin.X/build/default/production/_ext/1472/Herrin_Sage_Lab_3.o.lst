@@ -1,0 +1,220 @@
+MPASM 5.84             HERRIN_SAGE_LAB_3.ASM   9-30-2020  12:28:47         PAGE  1
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+                      00001 ;;;;;;; ASEN 4-5067 Lab3 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+                      00002 ; Author: Sage Herrin
+                      00003 ; Date  : 9/17/20
+                      00004 ;
+                      00005 ; DESCRIPTION
+                      00006 ; On power up execute the following sequence:
+                      00007 ;       RD5 ON for ~1 second then OFF
+                      00008 ;       RD6 ON for ~1 second then OFF
+                      00009 ;       RD7 ON for ~1 second then OFF
+                      00010 ; LOOP on the following forever:
+                      00011 ;       Blink "Alive" LED (RD4) ON for ~1sec then OFF for ~1sec
+                      00012 ;       Read input from RPG (at least every 2ms) connected to pins 
+                      00013 ;               RD0 and RD1 and mirror the output onto pins RJ2 and RJ3
+                      00014 ;       ASEN5519 ONLY: Read input from baseboard RD3 button and toggle the value 
+                      00015 ;               of RD2 such that the switch being pressed and RELEASED causes 
+                      00016 ;               RD2 to change state from ON to OFF or OFF to ON
+                      00017 ;       NOTE: ~1 second means +/- 100msec
+                      00018 ;
+                      00019 ;;;;;;; Program hierarchy ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+                      00020 ;
+                      00021 ; Mainline
+                      00022 ; Loop
+                      00023 ; Initial       -       Initialize ports and perform LED sequence
+                      00024 ; WaitXXXms     -       Subroutine to wait XXXms
+                      00025 ; Wait1sec      -       Subroutine to wait 1 sec 
+                      00026 ; Check_SW      -       Subroutine to check the status of RD3 button and change RD2 (ASEN5519 ONLY)
+                      00027 ; Check_RPG     -       Read the values of the RPG from RD0 and RD1 and display on RJ2 and RJ3
+                      00028 ;
+                      00029 ;;;;;;; Assembler directives ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+                      00030 
+                      00031         LIST  P=PIC18F87K22, F=INHX32, C=160, N=0, ST=OFF, MM=OFF, R=DEC, X=OFF
+                      00032         #include P18F87K22.inc
+                      00001         LIST
+                      00002 
+                      00003 ;==========================================================================
+                      00004 ; Build date : Mar 17 2019
+                      00005 ;  MPASM PIC18F87K22 processor include
+                      00006 ; 
+                      00007 ;  (c) Copyright 1999-2019 Microchip Technology, All rights reserved
+                      00008 ;==========================================================================
+                      00009 
+                      02986         LIST
+                      00033 
+                      00034 ;               MPLAB configuration directives
+                      00035                 
+1D 03 6A 7C F9 8B 91 F00036                 CONFIG  FOSC = HS1, XINST = OFF
+       F C0 FF E0 FF 4
+       0 
+                      00037                 CONFIG  PWRTEN = ON, BOREN = ON, BORV = 1
+                      00038                 CONFIG  WDTEN = OFF
+                      00039                 
+                      00040 ;;;;;;; Hardware notes ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+                      00041 ;
+                      00042 ;       RPG-A port/pin is RJ2
+                      00043 ;       RPG-B port/pin is RJ3
+                      00044 
+                      00045 ;;;;;;;; Variables ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+                      00046 
+                      00047         cblock  0x000   ;Start constant block values 
+  00000000            00048             CNT         ;This sets variable CNT = 0x000 (literal or file location)
+  00000001            00049             VAL1        ;This sets variable VAL1 = 0x001 (literal or file location)
+                      00050         endc
+                      00051 
+                      00052 ;;;;;;; Macro definitions ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+                      00053 
+                      00054 ; MOVLF is a macro that puts a literal value into a GPR or SFR
+                      00055 MOVLF   macro  literal,dest
+                      00056         movlw  literal
+                      00057         movwf  dest
+                      00058         endm
+                      00059 
+                      00060 ;;;;;;; Vectors ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+                      00061 
+000000                00062         org  0x0000             ;Reset vector
+000000 0000           00063         nop                     ;One instruction cycle delay.
+000002 EF0E F000      00064         goto  Mainline          ;Redirect code to the Mainline Program
+                      00065 
+000008                00066         org  0x0008             ;High priority interrupt vector
+000008 EF04 F000      00067         goto  $                 ;Return to current program counter location
+                      00068 
+000018                00069         org  0x0018             ;Low priority interrupt vector
+000018 EF0C F000      00070         goto  $                 ;Return to current program counter location
+                      00071 
+                      00072 ;;;;;;; Mainline Program ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+                      00073 
+00001C                00074 Mainline
+00001C D803           00075         rcall  Initial          ;Jump to initialization routine
+00001E                00076 Loop
+00001E D829           00077         RCALL   Wait1sec
+000020 788C           00078         BTG     LATD,4
+                      00079                                 ; Add operand to finish the use of this macro 
+000022 D7FD           00080         bra  Loop               ; Main loop should run forever after entry
+                      00081 
+                      00082 ;;;;;;; Initial subroutine ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+                      00083 ;
+                      00084 ; This subroutine performs all initializations of variables and registers.
+                      00085 
+000024                00086 Initial
+  00000001            00087 reg1    equ 0x01
+  00000002            00088 reg2    equ 0x02        
+                      00089         MOVLF   D'2',reg2
+  00000003            00090 reg3    equ 0x03        
+  00000007            00091 reg4    equ 0x07
+                      00092         MOVLF   D'5',reg4
+  00000009            00093 reg5    equ 0x09
+                      00094         MOVLF   D'2',reg5
+  00000004            00095 ledrj2  equ 0x04
+  00000005            00096 ledrj3  equ 0x05        
+  00000006            00097 on      equ 0x06        
+  00000008            00098 temp    equ 0x08
+                      00099         MOVLF   D'0',on
+                      00100         MOVLF   B'00001011',TRISD; Set TRISD - check that this and TRISJ are set right 
+                      00101         MOVLF   B'00000000',TRISJ; Set TRISJ
+                      00102         MOVLF   B'00000000',LATD; Turn off all LEDS
+000040 D818           00103         RCALL   Wait1sec; call subroutine to wait 1 second
+                      00104         MOVLF   B'00100000',LATD; Turn ON RD5
+000046 D815           00105         RCALL   Wait1sec; call subroutine to wait 1 second
+                      00106         MOVLF   B'00000000',LATD; Turn OFF RD5
+                      00107         MOVLF   B'01000000',LATD; Turn ON RD6
+000050 D810           00108         RCALL   Wait1sec; call subroutine to wait 1 second
+                      00109         MOVLF   B'00000000',LATD; Turn OFF RD6
+                      00110         MOVLF   B'10000000',LATD; Turn ON RD7
+00005A D80B           00111         RCALL   Wait1sec; call subroutine to wait 1 second
+                      00112         MOVLF   B'00000000',LATD; Turn OFF RD7
+000060 DFDE           00113         RCALL   Loop
+000062 0012           00114         return
+                      00115 
+                      00116 ;;;;;;; WaitXXXms subroutine ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+                      00117 ;
+                      00118 ; Subroutine to wait XXX ms
+                      00119 ; NOTE - STUDENTS replace XXX with some value of your choosing
+                      00120 ; Choose a suitable value to decrement a counter in a loop structure and 
+                      00121 ; not using an excessive amount of program memory - i.e. don't use 100 nop's
+                      00122                 
+000064                00123 Wait1ms
+000064                00124 loop2           ; Add code here - assume for now that this is a 2ms loop, fix later
+                      00125         MOVLF   D'4',reg1
+                      00126         
+000068                00127 loop1
+000068 0601           00128         DECF    reg1,1
+00006A E1FE           00129         BNZ     loop1
+00006C 0602           00130         DECF    reg2,1
+00006E E1FA           00131         BNZ     loop2
+000070 0012           00132                 return
+                      00133 
+                      00134 ;;;;;;; Wait1sec subroutine ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+                      00135 ;
+                      00136 ; Subroutine to wait 1 sec based on calling WaitXXXms YYY times or up to 3 nested loops
+                      00137                                 
+000072                00138 Wait1sec
+000072                00139 loop5
+                      00140         MOVLF   D'4',reg3       
+000076                00141 loop3
+000076 DFF6           00142         RCALL   Wait1ms 
+000078 D812           00143         RCALL   Check_RPG
+00007A D805           00144         RCALL   Check_SW1
+00007C 0603           00145         DECF    reg3,1
+00007E E1FB           00146         BNZ     loop3
+000080 0609           00147         DECF    reg5,1
+000082 E1F7           00148         BNZ     loop5; Add code here
+000084 0012           00149                 return
+                      00150 
+                      00151 ;;;;;;; Check_SW1 subroutine ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+                      00152 ;
+                      00153 ; Subroutine to check the status of RD3 button and change RD2 (ASEN5519 ONLY)
+                      00154                                 
+000086                00155 Check_SW1
+000086 A683           00156         BTFSS   PORTD,3 ; Add code here
+000088 D004           00157         BRA     ds
+00008A A606           00158         BTFSS   on,3
+00008C D80E           00159         RCALL   Debounce
+                      00160         MOVLF   B'00001000',on
+000092                00161 ds
+000092 5083           00162         MOVF    PORTD,0 
+000094 0B08           00163         ANDLW   B'00001000'
+000096 5C06           00164         SUBWF   on,0
+000098 B6E8           00165         BTFSC   WREG,3
+00009A D80B           00166         RCALL   onoff
+00009C 0012           00167                 return
+                      00168 
+                      00169 ;;;;;;; Check_RPG subroutine ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+                      00170 ;
+                      00171 ; Subroutine to read the values of the RPG and display on RJ2 and RJ3
+                      00172                                 
+00009E                00173 Check_RPG
+00009E 5083           00174         MOVF    PORTD,0
+0000A0 46E8           00175         RLNCF   WREG
+0000A2 46E8           00176         RLNCF   WREG
+0000A4 0B0C           00177         ANDLW   B'00001100'
+0000A6 6E91           00178         MOVWF   LATJ,0  
+0000A8 0012           00179                 return  ; Add code here
+                      00180                       
+                      00181 
+                      00182                 
+0000AA                00183 Debounce
+0000AA                00184 loop4
+0000AA DFDC           00185         RCALL   Wait1ms
+0000AC 0607           00186         DECF    reg4,1
+0000AE E1FD           00187         BNZ     loop4
+0000B0 0012           00188                 return
+                      00189                 
+                      00190                 
+0000B2                00191 onoff
+0000B2 748C           00192         BTG     LATD,2   
+0000B4 6A06           00193         CLRF    on
+0000B6 0012           00194                 return
+                      00195 
+                      00196         end
+
+Errors   :     0
+Warnings :     0 reported,     0 suppressed
+Messages :     0 reported,     0 suppressed
+
+

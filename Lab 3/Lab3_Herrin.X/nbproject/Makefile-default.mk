@@ -57,17 +57,17 @@ OBJECTDIR=build/${CND_CONF}/${IMAGE_TYPE}
 DISTDIR=dist/${CND_CONF}/${IMAGE_TYPE}
 
 # Source Files Quoted if spaced
-SOURCEFILES_QUOTED_IF_SPACED="C:/Users/sageh/OneDrive/Documents/5067/Lab 3/Lab3_Herrin.asm"
+SOURCEFILES_QUOTED_IF_SPACED=../Herrin_Sage_Lab_3.asm
 
 # Object Files Quoted if spaced
-OBJECTFILES_QUOTED_IF_SPACED=${OBJECTDIR}/_ext/1990699817/Lab3_Herrin.o
-POSSIBLE_DEPFILES=${OBJECTDIR}/_ext/1990699817/Lab3_Herrin.o.d
+OBJECTFILES_QUOTED_IF_SPACED=${OBJECTDIR}/_ext/1472/Herrin_Sage_Lab_3.o
+POSSIBLE_DEPFILES=${OBJECTDIR}/_ext/1472/Herrin_Sage_Lab_3.o.d
 
 # Object Files
-OBJECTFILES=${OBJECTDIR}/_ext/1990699817/Lab3_Herrin.o
+OBJECTFILES=${OBJECTDIR}/_ext/1472/Herrin_Sage_Lab_3.o
 
 # Source Files
-SOURCEFILES=C:/Users/sageh/OneDrive/Documents/5067/Lab 3/Lab3_Herrin.asm
+SOURCEFILES=../Herrin_Sage_Lab_3.asm
 
 
 CFLAGS=
@@ -94,30 +94,30 @@ MP_LINKER_DEBUG_OPTION=
 # ------------------------------------------------------------------------------------
 # Rules for buildStep: assemble
 ifeq ($(TYPE_IMAGE), DEBUG_RUN)
-${OBJECTDIR}/_ext/1990699817/Lab3_Herrin.o: C\:/Users/sageh/OneDrive/Documents/5067/Lab\ 3/Lab3_Herrin.asm  nbproject/Makefile-${CND_CONF}.mk
-	@${MKDIR} "${OBJECTDIR}/_ext/1990699817" 
-	@${RM} ${OBJECTDIR}/_ext/1990699817/Lab3_Herrin.o.d 
-	@${RM} ${OBJECTDIR}/_ext/1990699817/Lab3_Herrin.o 
-	@${FIXDEPS} dummy.d -e "C:/Users/sageh/OneDrive/Documents/5067/Lab 3/Lab3_Herrin.ERR" $(SILENT) -c ${MP_AS} $(MP_EXTRA_AS_PRE) -d__DEBUG -d__MPLAB_DEBUGGER_PK3=1 -q -p$(MP_PROCESSOR_OPTION)  $(ASM_OPTIONS)    \"C:/Users/sageh/OneDrive/Documents/5067/Lab 3/Lab3_Herrin.asm\" 
-	@${MV}  "C:/Users/sageh/OneDrive/Documents/5067/Lab 3/Lab3_Herrin".O ${OBJECTDIR}/_ext/1990699817/Lab3_Herrin.o
-	@${MV}  "C:/Users/sageh/OneDrive/Documents/5067/Lab 3/Lab3_Herrin".ERR ${OBJECTDIR}/_ext/1990699817/Lab3_Herrin.o.err
-	@${MV}  "C:/Users/sageh/OneDrive/Documents/5067/Lab 3/Lab3_Herrin".LST ${OBJECTDIR}/_ext/1990699817/Lab3_Herrin.o.lst
-	@${RM}  "C:/Users/sageh/OneDrive/Documents/5067/Lab 3/Lab3_Herrin".HEX 
-	@${DEP_GEN} -d "${OBJECTDIR}/_ext/1990699817/Lab3_Herrin.o"
-	@${FIXDEPS} "${OBJECTDIR}/_ext/1990699817/Lab3_Herrin.o.d" $(SILENT) -rsi ${MP_AS_DIR} -c18 
+${OBJECTDIR}/_ext/1472/Herrin_Sage_Lab_3.o: ../Herrin_Sage_Lab_3.asm  nbproject/Makefile-${CND_CONF}.mk
+	@${MKDIR} "${OBJECTDIR}/_ext/1472" 
+	@${RM} ${OBJECTDIR}/_ext/1472/Herrin_Sage_Lab_3.o.d 
+	@${RM} ${OBJECTDIR}/_ext/1472/Herrin_Sage_Lab_3.o 
+	@${FIXDEPS} dummy.d -e "C:/Users/sageh/Documents/5067/Lab 3/Herrin_Sage_Lab_3.ERR" $(SILENT) -c ${MP_AS} $(MP_EXTRA_AS_PRE) -d__DEBUG -d__MPLAB_DEBUGGER_PK3=1 -q -p$(MP_PROCESSOR_OPTION)  $(ASM_OPTIONS)    \"C:/Users/sageh/Documents/5067/Lab 3/Herrin_Sage_Lab_3.asm\" 
+	@${MV}  "C:/Users/sageh/Documents/5067/Lab 3/Herrin_Sage_Lab_3".O ${OBJECTDIR}/_ext/1472/Herrin_Sage_Lab_3.o
+	@${MV}  "C:/Users/sageh/Documents/5067/Lab 3/Herrin_Sage_Lab_3".ERR ${OBJECTDIR}/_ext/1472/Herrin_Sage_Lab_3.o.err
+	@${MV}  "C:/Users/sageh/Documents/5067/Lab 3/Herrin_Sage_Lab_3".LST ${OBJECTDIR}/_ext/1472/Herrin_Sage_Lab_3.o.lst
+	@${RM}  "C:/Users/sageh/Documents/5067/Lab 3/Herrin_Sage_Lab_3".HEX 
+	@${DEP_GEN} -d "${OBJECTDIR}/_ext/1472/Herrin_Sage_Lab_3.o"
+	@${FIXDEPS} "${OBJECTDIR}/_ext/1472/Herrin_Sage_Lab_3.o.d" $(SILENT) -rsi ${MP_AS_DIR} -c18 
 	
 else
-${OBJECTDIR}/_ext/1990699817/Lab3_Herrin.o: C\:/Users/sageh/OneDrive/Documents/5067/Lab\ 3/Lab3_Herrin.asm  nbproject/Makefile-${CND_CONF}.mk
-	@${MKDIR} "${OBJECTDIR}/_ext/1990699817" 
-	@${RM} ${OBJECTDIR}/_ext/1990699817/Lab3_Herrin.o.d 
-	@${RM} ${OBJECTDIR}/_ext/1990699817/Lab3_Herrin.o 
-	@${FIXDEPS} dummy.d -e "C:/Users/sageh/OneDrive/Documents/5067/Lab 3/Lab3_Herrin.ERR" $(SILENT) -c ${MP_AS} $(MP_EXTRA_AS_PRE) -q -p$(MP_PROCESSOR_OPTION)  $(ASM_OPTIONS)    \"C:/Users/sageh/OneDrive/Documents/5067/Lab 3/Lab3_Herrin.asm\" 
-	@${MV}  "C:/Users/sageh/OneDrive/Documents/5067/Lab 3/Lab3_Herrin".O ${OBJECTDIR}/_ext/1990699817/Lab3_Herrin.o
-	@${MV}  "C:/Users/sageh/OneDrive/Documents/5067/Lab 3/Lab3_Herrin".ERR ${OBJECTDIR}/_ext/1990699817/Lab3_Herrin.o.err
-	@${MV}  "C:/Users/sageh/OneDrive/Documents/5067/Lab 3/Lab3_Herrin".LST ${OBJECTDIR}/_ext/1990699817/Lab3_Herrin.o.lst
-	@${RM}  "C:/Users/sageh/OneDrive/Documents/5067/Lab 3/Lab3_Herrin".HEX 
-	@${DEP_GEN} -d "${OBJECTDIR}/_ext/1990699817/Lab3_Herrin.o"
-	@${FIXDEPS} "${OBJECTDIR}/_ext/1990699817/Lab3_Herrin.o.d" $(SILENT) -rsi ${MP_AS_DIR} -c18 
+${OBJECTDIR}/_ext/1472/Herrin_Sage_Lab_3.o: ../Herrin_Sage_Lab_3.asm  nbproject/Makefile-${CND_CONF}.mk
+	@${MKDIR} "${OBJECTDIR}/_ext/1472" 
+	@${RM} ${OBJECTDIR}/_ext/1472/Herrin_Sage_Lab_3.o.d 
+	@${RM} ${OBJECTDIR}/_ext/1472/Herrin_Sage_Lab_3.o 
+	@${FIXDEPS} dummy.d -e "C:/Users/sageh/Documents/5067/Lab 3/Herrin_Sage_Lab_3.ERR" $(SILENT) -c ${MP_AS} $(MP_EXTRA_AS_PRE) -q -p$(MP_PROCESSOR_OPTION)  $(ASM_OPTIONS)    \"C:/Users/sageh/Documents/5067/Lab 3/Herrin_Sage_Lab_3.asm\" 
+	@${MV}  "C:/Users/sageh/Documents/5067/Lab 3/Herrin_Sage_Lab_3".O ${OBJECTDIR}/_ext/1472/Herrin_Sage_Lab_3.o
+	@${MV}  "C:/Users/sageh/Documents/5067/Lab 3/Herrin_Sage_Lab_3".ERR ${OBJECTDIR}/_ext/1472/Herrin_Sage_Lab_3.o.err
+	@${MV}  "C:/Users/sageh/Documents/5067/Lab 3/Herrin_Sage_Lab_3".LST ${OBJECTDIR}/_ext/1472/Herrin_Sage_Lab_3.o.lst
+	@${RM}  "C:/Users/sageh/Documents/5067/Lab 3/Herrin_Sage_Lab_3".HEX 
+	@${DEP_GEN} -d "${OBJECTDIR}/_ext/1472/Herrin_Sage_Lab_3.o"
+	@${FIXDEPS} "${OBJECTDIR}/_ext/1472/Herrin_Sage_Lab_3.o.d" $(SILENT) -rsi ${MP_AS_DIR} -c18 
 	
 endif
 

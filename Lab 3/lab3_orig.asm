@@ -1,6 +1,6 @@
 ;;;;;;; ASEN 4-5067 Lab3 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-; Author: Sage Herrin
-; Date  : 9/17/20
+; Author: YOUR NAME HERE
+; Date  : DATE HERE
 ;
 ; DESCRIPTION
 ; On power up execute the following sequence:
@@ -119,7 +119,7 @@ Wait1sec
 
 ;;;;;;; Check_SW1 subroutine ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;
-; Subroutine to check the status of RD3 button and change RD2 (ASEN5519 ONLY)
+; Subroutine to check the status of RD3 button and change RD2 (ASEN5067 ONLY)
 				
 Check_SW1
 		; Add code here
