@@ -1,0 +1,220 @@
+MPASM 5.84             HERRIN_SAGE_LAB_4.ASM   10-12-2020  0:03:13         PAGE  1
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+                      00001 ;;;;;;; ASEN 4-5067 Lab4 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+                      00002 ; Author: Sage Herrin
+                      00003 ; Date  : 10/8/20
+                      00004 ;
+                      00005 ; DESCRIPTION
+                      00006 ; On power up execute the following sequence:
+                      00007 ;       RD5 ON for ~1 second then OFF
+                      00008 ;       RD6 ON for ~1 second then OFF
+                      00009 ;       RD7 ON for ~1 second then OFF
+                      00010 ; LOOP on the following forever:
+                      00011 ;       Blink "Alive" LED (RD4) ON for ~1sec then OFF for ~1sec
+                      00012 ;       Read input from RPG (at least every 2ms) connected to pins 
+                      00013 ;               RD0 and RD1 and mirror the output onto pins RJ2 and RJ3
+                      00014 ;       ASEN5519 ONLY: Read input from baseboard RD3 button and toggle the value 
+                      00015 ;               of RD2 such that the switch being pressed and RELEASED causes 
+                      00016 ;               RD2 to change state from ON to OFF or OFF to ON
+                      00017 ;       NOTE: ~1 second means +/- 100msec
+                      00018 ;
+                      00019 ;;;;;;; Program hierarchy ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+                      00020 ;
+                      00021 ; Mainline
+                      00022 ; Loop
+                      00023 ; Initial       -       Initialize ports and perform LED sequence
+                      00024 ; WaitXXXms     -       Subroutine to wait XXXms
+                      00025 ; Wait1sec      -       Subroutine to wait 1 sec 
+                      00026 ; Check_SW      -       Subroutine to check the status of RD3 button and change RD2 (ASEN5519 ONLY)
+                      00027 ; Check_RPG     -       Read the values of the RPG from RD0 and RD1 and display on RJ2 and RJ3
+                      00028 ;
+                      00029 ;;;;;;; Assembler directives ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+                      00030 
+                      00031         LIST  P=PIC18F87K22, F=INHX32, C=160, N=0, ST=OFF, MM=OFF, R=DEC, X=OFF
+                      00032         #include P18F87K22.inc
+                      00001         LIST
+                      00002 
+                      00003 ;==========================================================================
+                      00004 ; Build date : Mar 17 2019
+                      00005 ;  MPASM PIC18F87K22 processor include
+                      00006 ; 
+                      00007 ;  (c) Copyright 1999-2019 Microchip Technology, All rights reserved
+                      00008 ;==========================================================================
+                      00009 
+                      02986         LIST
+                      00033 
+                      00034 ;               MPLAB configuration directives
+                      00035                 
+                      00036                 CONFIG  FOSC = HS1, XINST = OFF
+                      00037                 CONFIG  PWRTEN = ON, BOREN = ON, BORV = 1
+                      00038                 CONFIG  WDTEN = OFF
+                      00039                 
+                      00040 ;;;;;;; Hardware notes ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+                      00041 ;
+                      00042 ;       RPG-A port/pin is RJ2
+                      00043 ;       RPG-B port/pin is RJ3
+                      00044 
+                      00045 ;;;;;;;; Variables ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+                      00046 
+                      00047         cblock  0x000           ; Beginning of Access RAM
+  00000000            00048         COUNT                   ; Counter available as local to subroutines
+  00000001            00049         ALIVECNT                ; Counter for blinking "Alive" LED
+  00000002            00050         BYTE                    ; Byte to be displayed
+  00000003            00051         BYTESTR:10              ; Display string for binary version of BYTE
+                      00052         endc
+                      00053 
+                      00054 ;;;;;;; Macro definitions ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+                      00055 
+                      00056 ; MOVLF is a macro that puts a literal value into a GPR or SFR
+                      00057 MOVLF   macro  literal,dest
+                      00058         movlw  literal
+                      00059         movwf  dest
+                      00060         endm
+                      00061 ;; POINT taken from Reference: Peatman CH 7 LCD
+                      00062 POINT   macro  stringname               ; Load a string into table pointer
+                      00063         MOVLF  high stringname, TBLPTRH ; Used to put values in program memory
+                      00064         MOVLF  low stringname, TBLPTRL
+                      00065         endm
+                      00066 
+                      00067 DISPLAY macro  register         ; Displays a given register in binary on LCD
+                      00068         movff  register,BYTE
+                      00069         call  ByteDisplay
+                      00070         endm
+                      00071 
+                      00072 ;;;;;;; Vectors ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+                      00073 
+                      00074         org  0x0000             ;Reset vector
+000000 0000           00075         nop                     ;One instruction cycle delay.
+000002 EF?? F???      00076         goto  Mainline          ;Redirect code to the Mainline Program
+                      00077 
+                      00078         org  0x0008             ;High priority interrupt vector
+000008 EF?? F???      00079         goto  $                 ;Return to current program counter location
+                      00080 
+                      00081         org  0x0018             ;Low priority interrupt vector
+000018 EF?? F???      00082         goto  $                 ;Return to current program counter location
+                      00083 
+                      00084 ;;;;;;; Mainline Program ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+                      00085 
+00001C                00086 Mainline
+00001C D???           00087         rcall  Initial          ;Jump to initialization routine
+00001E                00088 Loop
+00001E D???           00089         RCALL   Wait250ms
+                      00090         ;BTG    LATD,4
+                      00091                                 ; Add operand to finish the use of this macro 
+000020 D???           00092         bra  Loop               ; Main loop should run forever after entry
+                      00093 
+                      00094 ;;;;;;; Initial subroutine ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+                      00095 ;
+                      00096 ; This subroutine performs all initializations of variables and registers.
+                      00097 
+000022                00098 Initial
+                      00099         MOVLF   B'00000000',INTCON
+                      00100         MOVLF   B'10000101',T0CON       ; Set up Timer0 for a delay of 1 s
+                      00101         MOVLF   high Bignum,TMR0H       ; Writing binary 25536 to TMR0H / TMR0L
+                      00102         MOVLF   low Bignum,TMR0L
+                      00103         
+                      00104         MOVLF   B'00001011',TRISD; Set TRISD - check that this and TRISJ are set right 
+                      00105         MOVLF   B'00000000',LATD; Turn off all LEDS
+00003A D???           00106         RCALL   Wait1s; call subroutine to wait 1 second
+                      00107         MOVLF   B'00100000',LATD; Turn ON RD5
+000040 D???           00108         RCALL   Wait1s; call subroutine to wait 1 second
+                      00109         MOVLF   B'00000000',LATD; Turn OFF RD5
+                      00110         MOVLF   B'01000000',LATD; Turn ON RD6
+00004A D???           00111         RCALL   Wait1s; call subroutine to wait 1 second
+                      00112         MOVLF   B'00000000',LATD; Turn OFF RD6
+                      00113         MOVLF   B'10000000',LATD; Turn ON RD7
+000054 D???           00114         RCALL   Wait1s; call subroutine to wait 1 second
+                      00115         MOVLF   B'00000000',LATD; Turn OFF RD7
+                      00116         
+                      00117         
+                      00118         MOVLF   B'00000000',INTCON
+                      00119         MOVLF   B'10000011',T0CON       ; Set up Timer0 for a delay of 250 ms
+                      00120         MOVLF   high Bignum,TMR0H       ; Writing binary 25536 to TMR0H / TMR0L
+                      00121         MOVLF   low Bignum,TMR0L
+                      00122         
+00006A 0012           00123         return
+                      00124 
+                      00125 ;;;;;;; Wait1s subroutine ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+                      00126 ;
+                      00127 ; Subroutine to wait 1 second
+                      00128                 
+  00000BDC            00129 Bignum  equ     65536-62500             ;Used prescalar of 64
+                      00130 
+00006C                00131 Wait1s
+00006C A4F2           00132         btfss   INTCON,TMR0IF           ; Read Timer0 rollover flag and ...
+00006E D???           00133         bra     Wait1s                ; Loop if timer has not rolled over
+                      00134         MOVLF   high Bignum,TMR0H       ; Then write the timer values into
+                      00135         MOVLF   low Bignum,TMR0L        ; the timer high and low registers
+000078 94F2           00136         bcf     INTCON,TMR0IF           ; Clear Timer0 rollover flag
+00007A 0012           00137         return
+                      00138 
+                      00139 ;;;;;;; Wait1sec subroutine ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+                      00140 ;
+                      00141 ; Subroutine to wait 1 sec based on calling WaitXXXms YYY times or up to 3 nested loops
+                      00142                                 
+                      00143         ;Need prescalar of 16
+                      00144 
+00007C                00145 Wait250ms
+00007C A4F2           00146         btfss   INTCON,TMR0IF           ; Read Timer0 rollover flag and ...
+00007E 0012           00147         return
+000080 788C           00148         BTG     LATD,4
+                      00149         ;bra     Wait250ms                ; Loop if timer has not rolled over
+                      00150         MOVLF   high Bignum,TMR0H       ; Then write the timer values into
+                      00151         MOVLF   low Bignum,TMR0L        ; the timer high and low registers
+00008A 94F2           00152         bcf     INTCON,TMR0IF           ; Clear Timer0 rollover flag
+00008C 0012           00153         return
+                      00154 
+                      00155 ;;;;;;; Check_SW1 subroutine ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+                      00156 ;
+                      00157 ; Subroutine to check the status of RD3 button and change RD2 (ASEN5519 ONLY)
+                      00158                                 
+                      00159 ;Check_SW1
+                      00160 ;       BTFSS   PORTD,3 ; Add code here
+                      00161 ;       BRA     ds
+                      00162 ;       BTFSS   on,3
+                      00163 ;       RCALL   Debounce
+                      00164 ;       MOVLF   B'00001000',on
+                      00165 ;ds
+                      00166 ;       MOVF    PORTD,0 
+                      00167 ;       ANDLW   B'00001000'
+                      00168 ;       SUBWF   on,0
+                      00169 ;       BTFSC   WREG,3
+                      00170 ;       RCALL   onoff
+                      00171 ;               return
+                      00172 
+                      00173 ;;;;;;; Check_RPG subroutine ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+                      00174 ;
+                      00175 ; Subroutine to read the values of the RPG and display on RJ2 and RJ3
+                      00176                                 
+                      00177 ;Check_RPG
+                      00178 ;       MOVF    PORTD,0
+                      00179 ;       RLNCF   WREG
+                      00180 ;       RLNCF   WREG
+                      00181 ;       ANDLW   B'00001100'
+                      00182 ;       MOVWF   LATJ,0  
+                      00183 ;               return  ; Add code here
+                      00184 ;                               
+                      00185 ;Debounce
+                      00186 ;loop4
+                      00187 ;       RCALL   Wait1ms
+                      00188 ;       DECF    reg4,1
+                      00189 ;       BNZ     loop4
+                      00190 ;               return
+                      00191                 
+                      00192                 
+                      00193 ;onoff
+                      00194 ;       BTG     LATD,2   
+                      00195 ;       CLRF    on
+                      00196 ;               return
+                      00197 
+                      00198         end
+
+Errors   :     0
+Warnings :     0 reported,     0 suppressed
+Messages :     0 reported,     0 suppressed
+
+
