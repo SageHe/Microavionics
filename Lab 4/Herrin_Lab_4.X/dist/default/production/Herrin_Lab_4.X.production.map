@@ -1,5 +1,5 @@
 MPLINK 5.09, LINKER
-Linker Map File - Created Mon Oct 12 00:03:14 2020
+Linker Map File - Created Wed Oct 14 10:51:01 2020
 
                                  Section Info
                   Section       Type    Address   Location Size(Bytes)
@@ -7,7 +7,7 @@ Linker Map File - Created Mon Oct 12 00:03:14 2020
                    .org_0       code   0x000000    program   0x000006
                    .cinit    romdata   0x000006    program   0x000002
                    .org_1       code   0x000008    program   0x000004
-                   .org_2       code   0x000018    program   0x000076
+                   .org_2       code   0x000018    program   0x0002f2
 .config_300000_BUILD/DEFAULT/PRODUCTION/_EXT/14    romdata   0x300000    program   0x000001
 .config_300001_BUILD/DEFAULT/PRODUCTION/_EXT/14    romdata   0x300001    program   0x000001
 .config_300002_BUILD/DEFAULT/PRODUCTION/_EXT/14    romdata   0x300002    program   0x000001
@@ -19,22 +19,47 @@ Linker Map File - Created Mon Oct 12 00:03:14 2020
                                Start         End      
                            ---------   ---------      
                             0x000000    0x00000b      
-                            0x000018    0x00008d      
+                            0x000018    0x000309      
                             0x300000    0x300003      
-            134 out of 132120 program addresses used, program memory utilization is 0%
+            770 out of 132120 program addresses used, program memory utilization is 0%
 
 
 
                               Symbols - Sorted by Name
                      Name    Address   Location    Storage File                     
                 ---------  ---------  ---------  --------- ---------                
-                  Initial   0x000022    program     static ..\Herrin_Sage_Lab_4.asm 
+                   BYTE_1   0x0002e2    program     static ..\Herrin_Sage_Lab_4.asm 
+              ByteDisplay   0x0002ae    program     static ..\Herrin_Sage_Lab_4.asm 
+                Check_SW1   0x00021a    program     static ..\Herrin_Sage_Lab_4.asm 
+                 Debounce   0x00023c    program     static ..\Herrin_Sage_Lab_4.asm 
+                 DisplayC   0x000158    program     static ..\Herrin_Sage_Lab_4.asm 
+                 DisplayV   0x000190    program     static ..\Herrin_Sage_Lab_4.asm 
+                  InitLCD   0x00010e    program     static ..\Herrin_Sage_Lab_4.asm 
+                  Initial   0x000026    program     static ..\Herrin_Sage_Lab_4.asm 
+                      L10   0x0002bc    program     static ..\Herrin_Sage_Lab_4.asm 
+                       L4   0x000152    program     static ..\Herrin_Sage_Lab_4.asm 
+                    LCDcl   0x0002ec    program     static ..\Herrin_Sage_Lab_4.asm 
+                     LCDs   0x0002fa    program     static ..\Herrin_Sage_Lab_4.asm 
+                    LCDs2   0x000302    program     static ..\Herrin_Sage_Lab_4.asm 
+                   LCDstr   0x0002da    program     static ..\Herrin_Sage_Lab_4.asm 
                      Loop   0x00001e    program     static ..\Herrin_Sage_Lab_4.asm 
+                    Loop3   0x000112    program     static ..\Herrin_Sage_Lab_4.asm 
+                    Loop4   0x000124    program     static ..\Herrin_Sage_Lab_4.asm 
+                    Loop5   0x000162    program     static ..\Herrin_Sage_Lab_4.asm 
+                    Loop6   0x000192    program     static ..\Herrin_Sage_Lab_4.asm 
                  Mainline   0x00001c    program     static ..\Herrin_Sage_Lab_4.asm 
-                   Wait1s   0x00006c    program     static ..\Herrin_Sage_Lab_4.asm 
-                Wait250ms   0x00007c    program     static ..\Herrin_Sage_Lab_4.asm 
+                      T50   0x00014e    program     static ..\Herrin_Sage_Lab_4.asm 
+                 Wait10ms   0x0001e0    program     static ..\Herrin_Sage_Lab_4.asm 
+                   Wait1s   0x0001be    program     static ..\Herrin_Sage_Lab_4.asm 
+                Wait250ms   0x0001ce    program     static ..\Herrin_Sage_Lab_4.asm 
              _.org_1_0008   0x000008    program     static ..\Herrin_Sage_Lab_4.asm 
              _.org_2_0018   0x000018    program     static ..\Herrin_Sage_Lab_4.asm 
+                       ds   0x000230    program     static ..\Herrin_Sage_Lab_4.asm 
+                 highloop   0x000208    program     static ..\Herrin_Sage_Lab_4.asm 
+                  lowloop   0x0001f0    program     static ..\Herrin_Sage_Lab_4.asm 
+                       ps   0x00028e    program     static ..\Herrin_Sage_Lab_4.asm 
+                     pwmc   0x000244    program     static ..\Herrin_Sage_Lab_4.asm 
+                       qr   0x000274    program     static ..\Herrin_Sage_Lab_4.asm 
 
 
 
@@ -45,8 +70,33 @@ Linker Map File - Created Mon Oct 12 00:03:14 2020
              _.org_2_0018   0x000018    program     static ..\Herrin_Sage_Lab_4.asm 
                  Mainline   0x00001c    program     static ..\Herrin_Sage_Lab_4.asm 
                      Loop   0x00001e    program     static ..\Herrin_Sage_Lab_4.asm 
-                  Initial   0x000022    program     static ..\Herrin_Sage_Lab_4.asm 
-                   Wait1s   0x00006c    program     static ..\Herrin_Sage_Lab_4.asm 
-                Wait250ms   0x00007c    program     static ..\Herrin_Sage_Lab_4.asm 
+                  Initial   0x000026    program     static ..\Herrin_Sage_Lab_4.asm 
+                  InitLCD   0x00010e    program     static ..\Herrin_Sage_Lab_4.asm 
+                    Loop3   0x000112    program     static ..\Herrin_Sage_Lab_4.asm 
+                    Loop4   0x000124    program     static ..\Herrin_Sage_Lab_4.asm 
+                      T50   0x00014e    program     static ..\Herrin_Sage_Lab_4.asm 
+                       L4   0x000152    program     static ..\Herrin_Sage_Lab_4.asm 
+                 DisplayC   0x000158    program     static ..\Herrin_Sage_Lab_4.asm 
+                    Loop5   0x000162    program     static ..\Herrin_Sage_Lab_4.asm 
+                 DisplayV   0x000190    program     static ..\Herrin_Sage_Lab_4.asm 
+                    Loop6   0x000192    program     static ..\Herrin_Sage_Lab_4.asm 
+                   Wait1s   0x0001be    program     static ..\Herrin_Sage_Lab_4.asm 
+                Wait250ms   0x0001ce    program     static ..\Herrin_Sage_Lab_4.asm 
+                 Wait10ms   0x0001e0    program     static ..\Herrin_Sage_Lab_4.asm 
+                  lowloop   0x0001f0    program     static ..\Herrin_Sage_Lab_4.asm 
+                 highloop   0x000208    program     static ..\Herrin_Sage_Lab_4.asm 
+                Check_SW1   0x00021a    program     static ..\Herrin_Sage_Lab_4.asm 
+                       ds   0x000230    program     static ..\Herrin_Sage_Lab_4.asm 
+                 Debounce   0x00023c    program     static ..\Herrin_Sage_Lab_4.asm 
+                     pwmc   0x000244    program     static ..\Herrin_Sage_Lab_4.asm 
+                       qr   0x000274    program     static ..\Herrin_Sage_Lab_4.asm 
+                       ps   0x00028e    program     static ..\Herrin_Sage_Lab_4.asm 
+              ByteDisplay   0x0002ae    program     static ..\Herrin_Sage_Lab_4.asm 
+                      L10   0x0002bc    program     static ..\Herrin_Sage_Lab_4.asm 
+                   LCDstr   0x0002da    program     static ..\Herrin_Sage_Lab_4.asm 
+                   BYTE_1   0x0002e2    program     static ..\Herrin_Sage_Lab_4.asm 
+                    LCDcl   0x0002ec    program     static ..\Herrin_Sage_Lab_4.asm 
+                     LCDs   0x0002fa    program     static ..\Herrin_Sage_Lab_4.asm 
+                    LCDs2   0x000302    program     static ..\Herrin_Sage_Lab_4.asm 
 
 

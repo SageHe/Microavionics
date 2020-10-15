@@ -1,7 +1,7 @@
 Disassembly Listing for Lab_4example
 Generated From:
-C:/Users/sageh/Documents/5067/Lab 4/Lab_4example.X/dist/default/debug/Lab_4example.X.debug.cof
-Oct 1, 2020 1:59:15 PM
+C:/Users/sageh/Documents/5067/Lab 4/Lab_4example.X/dist/default/production/Lab_4example.X.production.cof
+Oct 14, 2020 7:56:02 AM
 
 ---  C:/Users/sageh/Documents/5067/Lab 4/lab4_example.asm  ----------------------------------------------
                                                   1:     ;;;;;;; ASEN 4-5519 Lab 4 Example code ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -126,9 +126,9 @@ Oct 1, 2020 1:59:15 PM
 004A  6EF2     MOVWF INTCON, ACCESS
 004C  0E08     MOVLW 0x8                          108:           MOVLF   B'00001000',T0CON       ; Set up Timer0 for a delay of 10 ms
 004E  6ED5     MOVWF T0CON, ACCESS
-0050  0E03     MOVLW 0x3                          109:           MOVLF   high Bignum,TMR0H       ; Writing binary 25536 to TMR0H / TMR0L
+0050  0E63     MOVLW 0x63                         109:           MOVLF   high Bignum,TMR0H       ; Writing binary 25536 to TMR0H / TMR0L
 0052  6ED7     MOVWF TMR0H, ACCESS
-0054  0EFC     MOVLW 0xFC                         110:           MOVLF   low Bignum,TMR0L	; Write high byte first, then low!
+0054  0EC0     MOVLW 0xC0                         110:           MOVLF   low Bignum,TMR0L	; Write high byte first, then low!
 0056  6ED6     MOVWF TMR0, ACCESS
                                                   111:   
 0058  0EFA     MOVLW 0xFA                         112:           MOVLF   D'250',ALIVECNT         ; Initializing Alive counter
@@ -140,12 +140,12 @@ Oct 1, 2020 1:59:15 PM
                                                   117:   
 0062  0E01     MOVLW 0x1                          118:           POINT   LCDs                    ; Hello
 0064  6EF7     MOVWF TBLPTRH, ACCESS
-0066  0E8E     MOVLW 0x8E
+0066  0E92     MOVLW 0x92
 0068  6EF6     MOVWF TBLPTR, ACCESS
 006A  D82B     RCALL 0xC2                         119:           rcall   DisplayC		; Display character subroutine
 006C  0E01     MOVLW 0x1                          120:           POINT   LCDs2                   ; World!
 006E  6EF7     MOVWF TBLPTRH, ACCESS
-0070  0E96     MOVLW 0x96
+0070  0E9A     MOVLW 0x9A
 0072  6EF6     MOVWF TBLPTR, ACCESS
 0074  D826     RCALL 0xC2                         121:           rcall   DisplayC
                                                   122:   
@@ -319,14 +319,14 @@ Oct 1, 2020 1:59:15 PM
                                                   285:   ; 65536-40000 or 25536 counts from the sixteen-bit count sequence.  
                                                   286:   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
                                                   287:   
-                                                  288:   Bignum  equ     65536-64516
+                                                  288:   Bignum  equ     65536-40000
                                                   289:   
                                                   290:   Wait10ms
 0136  A4F2     BTFSS INTCON, 2, ACCESS            291:           btfss 	INTCON,TMR0IF           ; Read Timer0 rollover flag and ...
 0138  D7FE     BRA 0x136                          292:           bra     Wait10ms                ; Loop if timer has not rolled over
-013A  0E03     MOVLW 0x3                          293:           MOVLF  	high Bignum,TMR0H       ; Then write the timer values into
+013A  0E63     MOVLW 0x63                         293:           MOVLF  	high Bignum,TMR0H       ; Then write the timer values into
 013C  6ED7     MOVWF TMR0H, ACCESS
-013E  0EFC     MOVLW 0xFC                         294:           MOVLF  	low Bignum,TMR0L        ; the timer high and low registers
+013E  0EC0     MOVLW 0xC0                         294:           MOVLF  	low Bignum,TMR0L        ; the timer high and low registers
 0140  6ED6     MOVWF TMR0, ACCESS
 0142  94F2     BCF INTCON, 2, ACCESS              295:           bcf  	INTCON,TMR0IF           ; Clear Timer0 rollover flag
 0144  0012     RETURN 0                           296:           return
@@ -337,9 +337,9 @@ Oct 1, 2020 1:59:15 PM
                                                   301:   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
                                                   302:   	
                                                   303:   ByteDisplay
-0146  0E01     MOVLW 0x1                          304:           POINT   BYTE_1                 ;Display "BYTE="
+0146  0E01     MOVLW 0x1                          304:           POINT   LCDcl                 ;Display "BYTE="
 0148  6EF7     MOVWF TBLPTRH, ACCESS
-014A  0E7A     MOVLW 0x7A
+014A  0E84     MOVLW 0x84
 014C  6EF6     MOVWF TBLPTR, ACCESS
 014E  DFB9     RCALL 0xC2                         305:           rcall   DisplayC
 0150  EE00     LFSR 0, 0xB                        306:           lfsr    0,BYTESTR+8
@@ -372,17 +372,19 @@ Oct 1, 2020 1:59:15 PM
 017C  5459     SUBFWB 0x59, W, ACCESS
 017E  3D45     INCFSZ 0x45, W, BANKED
 0180  2020     ADDWFC 0x20, W, ACCESS
-0184  2080     ADDWFC PORTA, W, ACCESS            327:   LCDcl   db  "\x80        \x00"
-0186  2020     ADDWFC 0x20, W, ACCESS
-0188  2020     ADDWFC 0x20, W, ACCESS
-018A  2020     ADDWFC 0x20, W, ACCESS
-018E  4880     INFSNZ PORTA, W, ACCESS            328:   LCDs    db  "\x80Hello\x00"
-0190  6C65     NEGF BAUDCON1, ACCESS
-0192  6F6C     MOVWF 0x6C, BANKED
-0194  0000     NOP
-0196  57C0     SUBFWB 0xC0, F, BANKED             329:   LCDs2   db  "\xC0World!\x00"
-0198  726F     BTG CCPR7, 1, ACCESS
-019A  646C     CPFSGT PR4, ACCESS
+0184  4180     RRNCF 0x80, W, BANKED              327:   LCDcl   db  "\x80ASEN 5067   \x00"
+0186  4553     RLNCF 0x53, W, BANKED
+0188  204E     ADDWFC 0x4E, W, ACCESS
+018A  3035     RRCF 0x35, W, ACCESS
+018C  3736     RLCF 0x36, F, BANKED
+018E  2020     ADDWFC 0x20, W, ACCESS
+0192  4880     INFSNZ PORTA, W, ACCESS            328:   LCDs    db  "\x80Hello\x00"
+0194  6C65     NEGF BAUDCON1, ACCESS
+0196  6F6C     MOVWF 0x6C, BANKED
+0198  0000     NOP
+019A  57C0     SUBFWB 0xC0, F, BANKED             329:   LCDs2   db  "\xC0World!\x00"
+019C  726F     BTG CCPR7, 1, ACCESS
+019E  646C     CPFSGT PR4, ACCESS
                                                   330:   ;;;;;;; End of Program ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
                                                   331:   
                                                   332:           end
