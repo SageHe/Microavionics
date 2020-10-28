@@ -1,0 +1,1556 @@
+
+
+Microchip MPLAB XC8 Assembler V2.10 build 88905656 
+                                                                                               Tue Oct 29 14:24:33 2019
+
+Microchip MPLAB XC8 C Compiler v2.10 (Free license) build 20190730164152 Og1 
+     1                           	processor	18F87K22
+     2                           	fnconf	rparam,??,?,0
+     3                           	opt	pw 120
+     4                           	opt	flic
+     5                           	psect	smallconst,global,reloc=2,class=SMALLCONST,delta=1,noexec
+     6                           	psect	cinit,global,reloc=2,class=CODE,delta=1
+     7                           	psect	bssCOMRAM,global,class=COMRAM,space=1,delta=1,noexec
+     8                           	psect	cstackCOMRAM,global,class=COMRAM,space=1,delta=1,noexec
+     9                           	psect	text0,global,reloc=2,class=CODE,delta=1
+    10                           	psect	text1,global,reloc=2,class=CODE,delta=1
+    11                           	psect	text2,global,reloc=2,class=CODE,delta=1
+    12                           	psect	text3,global,reloc=2,class=CODE,delta=1
+    13                           	psect	text4,global,reloc=2,class=CODE,delta=1
+    14                           	psect	intcodelo,global,reloc=2,class=CODE,delta=1
+    15                           	psect	text6,global,reloc=2,class=CODE,delta=1
+    16                           	psect	intcode,global,reloc=2,class=CODE,delta=1
+    17                           	psect	intcode_body,global,reloc=2,class=CODE,delta=1
+    18                           	psect	intsave_regs,global,class=BIGRAM,space=1,delta=1,noexec
+    19                           	psect	rparam,global,class=COMRAM,space=1,delta=1,noexec
+    20                           	psect	temp,global,ovrld,common,class=COMRAM,space=1,delta=1
+    21  0000                     
+    22                           ; Version 2.10
+    23                           ; Generated 31/07/2019 GMT
+    24                           ; 
+    25                           ; Copyright © 2019, Microchip Technology Inc. and its subsidiaries ("Microchip")
+    26                           ; All rights reserved.
+    27                           ; 
+    28                           ; This software is developed by Microchip Technology Inc. and its subsidiaries ("Microch
+      +                          ip").
+    29                           ; 
+    30                           ; Redistribution and use in source and binary forms, with or without modification, are
+    31                           ; permitted provided that the following conditions are met:
+    32                           ; 
+    33                           ;     1. Redistributions of source code must retain the above copyright notice, this lis
+      +                          t of
+    34                           ;        conditions and the following disclaimer.
+    35                           ; 
+    36                           ;     2. Redistributions in binary form must reproduce the above copyright notice, this 
+      +                          list
+    37                           ;        of conditions and the following disclaimer in the documentation and/or other
+    38                           ;        materials provided with the distribution.
+    39                           ; 
+    40                           ;     3. Microchip's name may not be used to endorse or promote products derived from th
+      +                          is
+    41                           ;        software without specific prior written permission.
+    42                           ; 
+    43                           ; THIS SOFTWARE IS PROVIDED BY MICROCHIP "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES,
+    44                           ; INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS F
+      +                          OR
+    45                           ; PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL MICROCHIP BE LIABLE FOR ANY DIRECT, INDIREC
+      +                          T,
+    46                           ; INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING BUT NOT LIMITED TO
+    47                           ; PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA OR PROFITS; OR BUSINESS
+    48                           ; INTERRUPTION) HOWSOEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, ST
+      +                          RICT
+    49                           ; LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE U
+      +                          SE OF
+    50                           ; THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+    51                           ; 
+    52                           ; 
+    53                           ; Code-generator required, PIC18F87K22 Definitions
+    54                           ; 
+    55                           ; SFR Addresses
+    56  0000                     
+    57                           	psect	smallconst
+    58  001000                     __psmallconst:
+    59                           	opt callstack 0
+    60  001000  00                 	db	0
+    61  001001                     _LCDInitStr_:
+    62                           	opt callstack 0
+    63  001001  33                 	db	51
+    64  001002  32                 	db	50
+    65  001003  28                 	db	40
+    66  001004  0C                 	db	12
+    67  001005  01                 	db	1
+    68  001006  06                 	db	6
+    69  001007  00                 	db	0
+    70  001008                     __end_of_LCDInitStr_:
+    71                           	opt callstack 0
+    72  0000                     _PORTB	set	3969
+    73  0000                     _LATB	set	3978
+    74  0000                     _LATBbits	set	3978
+    75  0000                     _T0CONbits	set	4053
+    76  0000                     _INTCONbits	set	4082
+    77  0000                     _INTCON2bits	set	4081
+    78  0000                     _RCONbits	set	4048
+    79  0000                     _TMR0H	set	4055
+    80  0000                     _TMR0L	set	4054
+    81  0000                     _T0CON	set	4053
+    82  0000                     _TRISB	set	3987
+    83  0000                     _LATC	set	3979
+    84  0000                     _TRISC	set	3988
+    85  0000                     _LATD	set	3980
+    86  0000                     _TRISD	set	3989
+    87  001008                     STR_1:
+    88  001008  2D                 	db	45
+    89  001009  52                 	db	82	;'R'
+    90  00100A  6F                 	db	111	;'o'
+    91  00100B  6C                 	db	108	;'l'
+    92  00100C  6C                 	db	108	;'l'
+    93  00100D  6F                 	db	111	;'o'
+    94  00100E  76                 	db	118	;'v'
+    95  00100F  65                 	db	101	;'e'
+    96  001010  72                 	db	114	;'r'
+    97  001011  2D                 	db	45
+    98  001012  00                 	db	0
+    99                           
+   100                           ; #config settings
+   101  001013  00                 	db	0	; dummy byte at the end
+   102  0000                     
+   103                           	psect	cinit
+   104  001248                     __pcinit:
+   105                           	opt callstack 0
+   106  001248                     start_initialization:
+   107                           	opt callstack 0
+   108  001248                     __initialization:
+   109                           	opt callstack 0
+   110                           
+   111                           ; Clear objects allocated to COMRAM (2 bytes)
+   112  001248  6A19               	clrf	(__pbssCOMRAM+1)& (0+255),c
+   113  00124A  6A18               	clrf	__pbssCOMRAM& (0+255),c
+   114  00124C                     end_of_initialization:
+   115                           	opt callstack 0
+   116  00124C                     __end_of__initialization:
+   117                           	opt callstack 0
+   118  00124C  901A               	bcf	int$flags,0,c	;clear compiler interrupt flag (level 1)
+   119  00124E  921A               	bcf	int$flags,1,c	;clear compiler interrupt flag (level 2)
+   120  001250  0E00               	movlw	low (__Lsmallconst shr (0+16))
+   121  001252  6EF8               	movwf	tblptru,c
+   122  001254  0E10               	movlw	high __Lsmallconst
+   123  001256  6EF7               	movwf	tblptrh,c
+   124  001258  0100               	movlb	0
+   125  00125A  EF37  F009         	goto	_main	;jump to C main() function
+   126                           
+   127                           	psect	bssCOMRAM
+   128  000018                     __pbssCOMRAM:
+   129                           	opt callstack 0
+   130  000018                     _Alive_count:
+   131                           	opt callstack 0
+   132  000018                     	ds	2
+   133                           
+   134                           	psect	cstackCOMRAM
+   135  000001                     __pcstackCOMRAM:
+   136                           	opt callstack 0
+   137  000001                     ??_LoPriISR:
+   138                           
+   139                           ; 1 bytes @ 0x0
+   140  000001                     	ds	3
+   141  000004                     ??_InitLCD:
+   142  000004                     DisplayV@LCDStr:
+   143                           	opt callstack 0
+   144                           
+   145                           ; 2 bytes @ 0x3
+   146  000004                     	ds	1
+   147  000005                     _InitLCD$358:
+   148                           	opt callstack 0
+   149                           
+   150                           ; 1 bytes @ 0x4
+   151  000005                     	ds	1
+   152  000006                     InitLCD@nibble:
+   153                           	opt callstack 0
+   154  000006                     DisplayV@nibble:
+   155                           	opt callstack 0
+   156                           
+   157                           ; 1 bytes @ 0x5
+   158  000006                     	ds	1
+   159  000007                     InitLCD@count:
+   160                           	opt callstack 0
+   161  000007                     DisplayV@count:
+   162                           	opt callstack 0
+   163                           
+   164                           ; 1 bytes @ 0x6
+   165  000007                     	ds	1
+   166  000008                     DisplayC@LCDStr:
+   167                           	opt callstack 0
+   168                           
+   169                           ; 2 bytes @ 0x7
+   170  000008                     	ds	2
+   171  00000A                     ??_DisplayC:
+   172                           
+   173                           ; 1 bytes @ 0x9
+   174  00000A                     	ds	2
+   175  00000C                     DisplayC@temp:
+   176                           	opt callstack 0
+   177                           
+   178                           ; 10 bytes @ 0xB
+   179  00000C                     	ds	10
+   180  000016                     DisplayC@i:
+   181                           	opt callstack 0
+   182                           
+   183                           ; 2 bytes @ 0x15
+   184  000016                     	ds	2
+   185  000018                     
+   186                           ; 1 bytes @ 0x17
+   187 ;;
+   188 ;;Main: autosize = 0, tempsize = 0, incstack = 0, save=0
+   189 ;;
+   190 ;; *************** function _main *****************
+   191 ;; Defined at:
+   192 ;;		line 57 in file "C:/Users/wyatt/Documents/ASEN 4519/Lab 5/lab5b_xc8_orig.c"
+   193 ;; Parameters:    Size  Location     Type
+   194 ;;		None
+   195 ;; Auto vars:     Size  Location     Type
+   196 ;;		None
+   197 ;; Return value:  Size  Location     Type
+   198 ;;                  1    wreg      void 
+   199 ;; Registers used:
+   200 ;;		wreg, fsr2l, fsr2h, status,2, status,0, tblptrl, tblptrh, tblptru, cstack
+   201 ;; Tracked objects:
+   202 ;;		On entry : 0/0
+   203 ;;		On exit  : 0/0
+   204 ;;		Unchanged: 0/0
+   205 ;; Data sizes:     COMRAM   BANK0   BANK1   BANK2   BANK3   BANK4   BANK5   BANK6   BANK7   BANK8   BANK9  BANK10  BANK1
+      +1  BANK12  BANK13  BANK14  BANK15
+   206 ;;      Params:         0       0       0       0       0       0       0       0       0       0       0       0       
+      +0       0       0       0       0
+   207 ;;      Locals:         0       0       0       0       0       0       0       0       0       0       0       0       
+      +0       0       0       0       0
+   208 ;;      Temps:          0       0       0       0       0       0       0       0       0       0       0       0       
+      +0       0       0       0       0
+   209 ;;      Totals:         0       0       0       0       0       0       0       0       0       0       0       0       
+      +0       0       0       0       0
+   210 ;;Total ram usage:        0 bytes
+   211 ;; Hardware stack levels required when called:    6
+   212 ;; This function calls:
+   213 ;;		_Initial
+   214 ;; This function is called by:
+   215 ;;		Startup code after reset
+   216 ;; This function uses a non-reentrant model
+   217 ;;
+   218                           
+   219                           	psect	text0
+   220  00126E                     __ptext0:
+   221                           	opt callstack 0
+   222  00126E                     _main:
+   223                           	opt callstack 25
+   224  00126E  EC05  F009         	call	_Initial	;wreg free
+   225  001272                     l39:
+   226  001272  EF39  F009         	goto	l39
+   227  001276  EF26  F000         	goto	start
+   228  00127A                     __end_of_main:
+   229                           	opt callstack 0
+   230                           
+   231 ;; *************** function _Initial *****************
+   232 ;; Defined at:
+   233 ;;		line 71 in file "C:/Users/wyatt/Documents/ASEN 4519/Lab 5/lab5b_xc8_orig.c"
+   234 ;; Parameters:    Size  Location     Type
+   235 ;;		None
+   236 ;; Auto vars:     Size  Location     Type
+   237 ;;		None
+   238 ;; Return value:  Size  Location     Type
+   239 ;;                  1    wreg      void 
+   240 ;; Registers used:
+   241 ;;		wreg, fsr2l, fsr2h, status,2, status,0, tblptrl, tblptrh, tblptru, cstack
+   242 ;; Tracked objects:
+   243 ;;		On entry : 0/0
+   244 ;;		On exit  : 0/0
+   245 ;;		Unchanged: 0/0
+   246 ;; Data sizes:     COMRAM   BANK0   BANK1   BANK2   BANK3   BANK4   BANK5   BANK6   BANK7   BANK8   BANK9  BANK10  BANK1
+      +1  BANK12  BANK13  BANK14  BANK15
+   247 ;;      Params:         0       0       0       0       0       0       0       0       0       0       0       0       
+      +0       0       0       0       0
+   248 ;;      Locals:         0       0       0       0       0       0       0       0       0       0       0       0       
+      +0       0       0       0       0
+   249 ;;      Temps:          0       0       0       0       0       0       0       0       0       0       0       0       
+      +0       0       0       0       0
+   250 ;;      Totals:         0       0       0       0       0       0       0       0       0       0       0       0       
+      +0       0       0       0       0
+   251 ;;Total ram usage:        0 bytes
+   252 ;; Hardware stack levels used:    1
+   253 ;; Hardware stack levels required when called:    5
+   254 ;; This function calls:
+   255 ;;		_DisplayC
+   256 ;;		_InitLCD
+   257 ;; This function is called by:
+   258 ;;		_main
+   259 ;; This function uses a non-reentrant model
+   260 ;;
+   261                           
+   262                           	psect	text1
+   263  00120A                     __ptext1:
+   264                           	opt callstack 0
+   265  00120A                     _Initial:
+   266                           	opt callstack 25
+   267  00120A                     
+   268                           ;C:/Users/wyatt/Documents/ASEN 4519/Lab 5/lab5b_xc8_orig.c: 73:     TRISD = 0x00;
+   269  00120A  0E00               	movlw	0
+   270  00120C  6E95               	movwf	149,c	;volatile
+   271                           
+   272                           ;C:/Users/wyatt/Documents/ASEN 4519/Lab 5/lab5b_xc8_orig.c: 74:     LATD = 0x00;
+   273  00120E  0E00               	movlw	0
+   274  001210  6E8C               	movwf	140,c	;volatile
+   275                           
+   276                           ;C:/Users/wyatt/Documents/ASEN 4519/Lab 5/lab5b_xc8_orig.c: 75:     TRISC = 0x00;
+   277  001212  0E00               	movlw	0
+   278  001214  6E94               	movwf	148,c	;volatile
+   279                           
+   280                           ;C:/Users/wyatt/Documents/ASEN 4519/Lab 5/lab5b_xc8_orig.c: 76:     LATC = 0x00;
+   281  001216  0E00               	movlw	0
+   282  001218  6E8B               	movwf	139,c	;volatile
+   283                           
+   284                           ;C:/Users/wyatt/Documents/ASEN 4519/Lab 5/lab5b_xc8_orig.c: 77:     TRISB = 0x00;
+   285  00121A  0E00               	movlw	0
+   286  00121C  6E93               	movwf	147,c	;volatile
+   287  00121E                     
+   288                           ;C:/Users/wyatt/Documents/ASEN 4519/Lab 5/lab5b_xc8_orig.c: 80:     InitLCD();
+   289  00121E  EC0A  F008         	call	_InitLCD	;wreg free
+   290  001222                     
+   291                           ;C:/Users/wyatt/Documents/ASEN 4519/Lab 5/lab5b_xc8_orig.c: 83:     DisplayC("-Rollover-
+      +                          ");
+   292  001222  0E08               	movlw	low STR_1
+   293  001224  6E08               	movwf	DisplayC@LCDStr^0,c
+   294  001226  0E10               	movlw	high STR_1
+   295  001228  6E09               	movwf	(DisplayC@LCDStr+1)^0,c
+   296  00122A  ECD7  F008         	call	_DisplayC	;wreg free
+   297  00122E                     
+   298                           ;C:/Users/wyatt/Documents/ASEN 4519/Lab 5/lab5b_xc8_orig.c: 85:     T0CON = 0b00000101;
+   299  00122E  0E05               	movlw	5
+   300  001230  6ED5               	movwf	213,c	;volatile
+   301  001232                     
+   302                           ;C:/Users/wyatt/Documents/ASEN 4519/Lab 5/lab5b_xc8_orig.c: 86:     TMR0L = 0xDB;
+   303  001232  0EDB               	movlw	219
+   304  001234  6ED6               	movwf	214,c	;volatile
+   305  001236                     
+   306                           ;C:/Users/wyatt/Documents/ASEN 4519/Lab 5/lab5b_xc8_orig.c: 87:     TMR0H = 0x0B;
+   307  001236  0E0B               	movlw	11
+   308  001238  6ED7               	movwf	215,c	;volatile
+   309  00123A                     
+   310                           ;C:/Users/wyatt/Documents/ASEN 4519/Lab 5/lab5b_xc8_orig.c: 91:     RCONbits.IPEN = 1;
+   311  00123A  8ED0               	bsf	208,7,c	;volatile
+   312  00123C                     
+   313                           ;C:/Users/wyatt/Documents/ASEN 4519/Lab 5/lab5b_xc8_orig.c: 92:     INTCON2bits.TMR0IP =
+      +                           0;
+   314  00123C  94F1               	bcf	241,2,c	;volatile
+   315  00123E                     
+   316                           ;C:/Users/wyatt/Documents/ASEN 4519/Lab 5/lab5b_xc8_orig.c: 94:     INTCONbits.TMR0IE = 
+      +                          1;
+   317  00123E  8AF2               	bsf	242,5,c	;volatile
+   318  001240                     
+   319                           ;C:/Users/wyatt/Documents/ASEN 4519/Lab 5/lab5b_xc8_orig.c: 95:     INTCONbits.GIEL = 1;
+   320  001240  8CF2               	bsf	242,6,c	;volatile
+   321  001242                     
+   322                           ;C:/Users/wyatt/Documents/ASEN 4519/Lab 5/lab5b_xc8_orig.c: 96:     INTCONbits.GIEH = 1;
+   323  001242  8EF2               	bsf	242,7,c	;volatile
+   324  001244                     
+   325                           ;C:/Users/wyatt/Documents/ASEN 4519/Lab 5/lab5b_xc8_orig.c: 98:     T0CONbits.TMR0ON = 1
+      +                          ;
+   326  001244  8ED5               	bsf	213,7,c	;volatile
+   327  001246  0012               	return		;funcret
+   328  001248                     __end_of_Initial:
+   329                           	opt callstack 0
+   330                           
+   331 ;; *************** function _InitLCD *****************
+   332 ;; Defined at:
+   333 ;;		line 51 in file "C:/Users/wyatt/Documents/ASEN 4519/Lab 5/LCDroutinesEasyPic.c"
+   334 ;; Parameters:    Size  Location     Type
+   335 ;;		None
+   336 ;; Auto vars:     Size  Location     Type
+   337 ;;  count           1    6[COMRAM] unsigned char 
+   338 ;;  nibble          1    5[COMRAM] unsigned char 
+   339 ;; Return value:  Size  Location     Type
+   340 ;;                  1    wreg      void 
+   341 ;; Registers used:
+   342 ;;		wreg, status,2, status,0, tblptrl, tblptrh, tblptru
+   343 ;; Tracked objects:
+   344 ;;		On entry : 0/0
+   345 ;;		On exit  : 0/0
+   346 ;;		Unchanged: 0/0
+   347 ;; Data sizes:     COMRAM   BANK0   BANK1   BANK2   BANK3   BANK4   BANK5   BANK6   BANK7   BANK8   BANK9  BANK10  BANK1
+      +1  BANK12  BANK13  BANK14  BANK15
+   348 ;;      Params:         0       0       0       0       0       0       0       0       0       0       0       0       
+      +0       0       0       0       0
+   349 ;;      Locals:         3       0       0       0       0       0       0       0       0       0       0       0       
+      +0       0       0       0       0
+   350 ;;      Temps:          1       0       0       0       0       0       0       0       0       0       0       0       
+      +0       0       0       0       0
+   351 ;;      Totals:         4       0       0       0       0       0       0       0       0       0       0       0       
+      +0       0       0       0       0
+   352 ;;Total ram usage:        4 bytes
+   353 ;; Hardware stack levels used:    1
+   354 ;; Hardware stack levels required when called:    3
+   355 ;; This function calls:
+   356 ;;		Nothing
+   357 ;; This function is called by:
+   358 ;;		_Initial
+   359 ;; This function uses a non-reentrant model
+   360 ;;
+   361                           
+   362                           	psect	text2
+   363  001014                     __ptext2:
+   364                           	opt callstack 0
+   365  001014                     _InitLCD:
+   366                           	opt callstack 26
+   367  001014                     
+   368                           ;C:/Users/wyatt/Documents/ASEN 4519/Lab 5/LCDroutinesEasyPic.c: 52:  unsigned char count
+      +                           = 0;
+   369  001014  0E00               	movlw	0
+   370  001016  6E07               	movwf	InitLCD@count^0,c
+   371  001018                     
+   372                           ;C:/Users/wyatt/Documents/ASEN 4519/Lab 5/LCDroutinesEasyPic.c: 56:     _delay((unsigned
+      +                           long)((40)*(16000000/4000.0)));
+   373  001018  0ED0               	movlw	208
+   374  00101A  6E04               	movwf	??_InitLCD^0,c
+   375  00101C  0ECA               	movlw	202
+   376  00101E                     u167:
+   377  00101E  2EE8               	decfsz	wreg,f,c
+   378  001020  D7FE               	bra	u167
+   379  001022  2E04               	decfsz	??_InitLCD^0,f,c
+   380  001024  D7FC               	bra	u167
+   381  001026                     
+   382                           ;C:/Users/wyatt/Documents/ASEN 4519/Lab 5/LCDroutinesEasyPic.c: 59:  LATBbits.LATB4 = 0;
+   383  001026  988A               	bcf	138,4,c	;volatile
+   384                           
+   385                           ;C:/Users/wyatt/Documents/ASEN 4519/Lab 5/LCDroutinesEasyPic.c: 61:  while(LCDInitStr_[c
+      +                          ount]!=0x00) {
+   386  001028  EF6D  F008         	goto	l981
+   387  00102C                     l943:
+   388                           
+   389                           ;C:/Users/wyatt/Documents/ASEN 4519/Lab 5/LCDroutinesEasyPic.c: 62:         LATB = 0;
+   390  00102C  0E00               	movlw	0
+   391  00102E  6E8A               	movwf	138,c	;volatile
+   392  001030                     
+   393                           ;C:/Users/wyatt/Documents/ASEN 4519/Lab 5/LCDroutinesEasyPic.c: 63:   LATBbits.LATB5 = 1
+      +                          ;
+   394  001030  8A8A               	bsf	138,5,c	;volatile
+   395  001032                     
+   396                           ;C:/Users/wyatt/Documents/ASEN 4519/Lab 5/LCDroutinesEasyPic.c: 65:         nibble = 0xF
+      +                          0 & LCDInitStr_[count];
+   397  001032  0E01               	movlw	low _LCDInitStr_
+   398  001034  2407               	addwf	InitLCD@count^0,w,c
+   399  001036  6EF6               	movwf	tblptrl,c
+   400  001038  6AF7               	clrf	tblptrh,c
+   401  00103A  0E10               	movlw	high _LCDInitStr_
+   402  00103C  22F7               	addwfc	tblptrh,f,c
+   403  00103E                     	if	0	;There are less than 3 active tblptr bytes
+   404  00103E                     	endif
+   405  00103E  0008               	tblrd		*
+   406  001040  50F5               	movf	tablat,w,c
+   407  001042  0BF0               	andlw	240
+   408  001044  6E06               	movwf	InitLCD@nibble^0,c
+   409  001046                     
+   410                           ;C:/Users/wyatt/Documents/ASEN 4519/Lab 5/LCDroutinesEasyPic.c: 67:         nibble >>= 4
+      +                          ;
+   411  001046  3A06               	swapf	InitLCD@nibble^0,f,c
+   412  001048  0E0F               	movlw	15
+   413  00104A  1606               	andwf	InitLCD@nibble^0,f,c
+   414  00104C                     
+   415                           ;C:/Users/wyatt/Documents/ASEN 4519/Lab 5/LCDroutinesEasyPic.c: 69:         LATB = nibbl
+      +                          e | LCDInitStr_[count];
+   416  00104C  0E01               	movlw	low _LCDInitStr_
+   417  00104E  2407               	addwf	InitLCD@count^0,w,c
+   418  001050  6EF6               	movwf	tblptrl,c
+   419  001052  6AF7               	clrf	tblptrh,c
+   420  001054  0E10               	movlw	high _LCDInitStr_
+   421  001056  22F7               	addwfc	tblptrh,f,c
+   422  001058                     	if	0	;There are less than 3 active tblptr bytes
+   423  001058                     	endif
+   424  001058  0008               	tblrd		*
+   425  00105A  50F5               	movf	tablat,w,c
+   426  00105C  1006               	iorwf	InitLCD@nibble^0,w,c
+   427  00105E  6E8A               	movwf	138,c	;volatile
+   428  001060                     
+   429                           ;C:/Users/wyatt/Documents/ASEN 4519/Lab 5/LCDroutinesEasyPic.c: 70:         LATBbits.LAT
+      +                          B5 = 0;
+   430  001060  9A8A               	bcf	138,5,c	;volatile
+   431  001062                     
+   432                           ;C:/Users/wyatt/Documents/ASEN 4519/Lab 5/LCDroutinesEasyPic.c: 71:         _delay((unsi
+      +                          gned long)((10)*(16000000/4000.0)));
+   433  001062  0E34               	movlw	52
+   434  001064  6E04               	movwf	??_InitLCD^0,c
+   435  001066  0EF2               	movlw	242
+   436  001068                     u177:
+   437  001068  2EE8               	decfsz	wreg,f,c
+   438  00106A  D7FE               	bra	u177
+   439  00106C  2E04               	decfsz	??_InitLCD^0,f,c
+   440  00106E  D7FC               	bra	u177
+   441  001070                     
+   442                           ;C:/Users/wyatt/Documents/ASEN 4519/Lab 5/LCDroutinesEasyPic.c: 73:         LATB = 0;
+   443  001070  0E00               	movlw	0
+   444  001072  6E8A               	movwf	138,c	;volatile
+   445  001074                     
+   446                           ;C:/Users/wyatt/Documents/ASEN 4519/Lab 5/LCDroutinesEasyPic.c: 74:   LATBbits.LATB5 = 1
+      +                          ;
+   447  001074  8A8A               	bsf	138,5,c	;volatile
+   448  001076                     
+   449                           ;C:/Users/wyatt/Documents/ASEN 4519/Lab 5/LCDroutinesEasyPic.c: 76:         nibble = LCD
+      +                          InitStr_[count];
+   450  001076  0E01               	movlw	low _LCDInitStr_
+   451  001078  2407               	addwf	InitLCD@count^0,w,c
+   452  00107A  6EF6               	movwf	tblptrl,c
+   453  00107C  6AF7               	clrf	tblptrh,c
+   454  00107E  0E10               	movlw	high _LCDInitStr_
+   455  001080  22F7               	addwfc	tblptrh,f,c
+   456  001082                     	if	0	;There are less than 3 active tblptr bytes
+   457  001082                     	endif
+   458  001082  0008               	tblrd		*
+   459  001084  CFF5 F006          	movff	tablat,InitLCD@nibble
+   460  001088                     
+   461                           ;C:/Users/wyatt/Documents/ASEN 4519/Lab 5/LCDroutinesEasyPic.c: 77:         nibble &= 0x
+      +                          0F;
+   462  001088  0E0F               	movlw	15
+   463  00108A  1606               	andwf	InitLCD@nibble^0,f,c
+   464  00108C                     
+   465                           ;C:/Users/wyatt/Documents/ASEN 4519/Lab 5/LCDroutinesEasyPic.c: 79:         LATB = nibbl
+      +                          e || LCDInitStr_[count];
+   466  00108C  0E01               	movlw	1
+   467  00108E  6E05               	movwf	_InitLCD$358^0,c
+   468  001090  5006               	movf	InitLCD@nibble^0,w,c
+   469  001092  A4D8               	btfss	status,2,c
+   470  001094  EF4E  F008         	goto	u121
+   471  001098  EF50  F008         	goto	u120
+   472  00109C                     u121:
+   473  00109C  EF62  F008         	goto	l973
+   474  0010A0                     u120:
+   475  0010A0  0E01               	movlw	low _LCDInitStr_
+   476  0010A2  2407               	addwf	InitLCD@count^0,w,c
+   477  0010A4  6EF6               	movwf	tblptrl,c
+   478  0010A6  6AF7               	clrf	tblptrh,c
+   479  0010A8  0E10               	movlw	high _LCDInitStr_
+   480  0010AA  22F7               	addwfc	tblptrh,f,c
+   481  0010AC                     	if	0	;There are less than 3 active tblptr bytes
+   482  0010AC                     	endif
+   483  0010AC  0008               	tblrd		*
+   484  0010AE  50F5               	movf	tablat,w,c
+   485  0010B0  0900               	iorlw	0
+   486  0010B2  A4D8               	btfss	status,2,c
+   487  0010B4  EF5E  F008         	goto	u131
+   488  0010B8  EF60  F008         	goto	u130
+   489  0010BC                     u131:
+   490  0010BC  EF62  F008         	goto	l973
+   491  0010C0                     u130:
+   492  0010C0  0E00               	movlw	0
+   493  0010C2  6E05               	movwf	_InitLCD$358^0,c
+   494  0010C4                     l973:
+   495  0010C4  C005  FF8A         	movff	_InitLCD$358,3978	;volatile
+   496  0010C8                     
+   497                           ;C:/Users/wyatt/Documents/ASEN 4519/Lab 5/LCDroutinesEasyPic.c: 80:         LATBbits.LAT
+      +                          B5 = 0;
+   498  0010C8  9A8A               	bcf	138,5,c	;volatile
+   499  0010CA                     
+   500                           ;C:/Users/wyatt/Documents/ASEN 4519/Lab 5/LCDroutinesEasyPic.c: 81:      _delay((unsigne
+      +                          d long)((10)*(16000000/4000.0)));
+   501  0010CA  0E34               	movlw	52
+   502  0010CC  6E04               	movwf	??_InitLCD^0,c
+   503  0010CE  0EF2               	movlw	242
+   504  0010D0                     u187:
+   505  0010D0  2EE8               	decfsz	wreg,f,c
+   506  0010D2  D7FE               	bra	u187
+   507  0010D4  2E04               	decfsz	??_InitLCD^0,f,c
+   508  0010D6  D7FC               	bra	u187
+   509  0010D8                     
+   510                           ;C:/Users/wyatt/Documents/ASEN 4519/Lab 5/LCDroutinesEasyPic.c: 83:   count++;
+   511  0010D8  2A07               	incf	InitLCD@count^0,f,c
+   512  0010DA                     l981:
+   513                           
+   514                           ;C:/Users/wyatt/Documents/ASEN 4519/Lab 5/LCDroutinesEasyPic.c: 61:  while(LCDInitStr_[c
+      +                          ount]!=0x00) {
+   515  0010DA  0E01               	movlw	low _LCDInitStr_
+   516  0010DC  2407               	addwf	InitLCD@count^0,w,c
+   517  0010DE  6EF6               	movwf	tblptrl,c
+   518  0010E0  6AF7               	clrf	tblptrh,c
+   519  0010E2  0E10               	movlw	high _LCDInitStr_
+   520  0010E4  22F7               	addwfc	tblptrh,f,c
+   521  0010E6                     	if	0	;There are less than 3 active tblptr bytes
+   522  0010E6                     	endif
+   523  0010E6  0008               	tblrd		*
+   524  0010E8  50F5               	movf	tablat,w,c
+   525  0010EA  0900               	iorlw	0
+   526  0010EC  A4D8               	btfss	status,2,c
+   527  0010EE  EF7B  F008         	goto	u141
+   528  0010F2  EF7D  F008         	goto	u140
+   529  0010F6                     u141:
+   530  0010F6  EF16  F008         	goto	l943
+   531  0010FA                     u140:
+   532  0010FA                     
+   533                           ;C:/Users/wyatt/Documents/ASEN 4519/Lab 5/LCDroutinesEasyPic.c: 85:  LATBbits.LATB4 = 1;
+   534  0010FA  888A               	bsf	138,4,c	;volatile
+   535  0010FC  0012               	return		;funcret
+   536  0010FE                     __end_of_InitLCD:
+   537                           	opt callstack 0
+   538                           
+   539 ;; *************** function _DisplayC *****************
+   540 ;; Defined at:
+   541 ;;		line 97 in file "C:/Users/wyatt/Documents/ASEN 4519/Lab 5/LCDroutinesEasyPic.c"
+   542 ;; Parameters:    Size  Location     Type
+   543 ;;  LCDStr          2    7[COMRAM] PTR const unsigned char 
+   544 ;;		 -> STR_1(11), 
+   545 ;; Auto vars:     Size  Location     Type
+   546 ;;  i               2   21[COMRAM] int 
+   547 ;;  temp           10   11[COMRAM] unsigned char [10]
+   548 ;; Return value:  Size  Location     Type
+   549 ;;                  1    wreg      void 
+   550 ;; Registers used:
+   551 ;;		wreg, fsr2l, fsr2h, status,2, status,0, tblptrl, tblptrh, tblptru, cstack
+   552 ;; Tracked objects:
+   553 ;;		On entry : 0/0
+   554 ;;		On exit  : 0/0
+   555 ;;		Unchanged: 0/0
+   556 ;; Data sizes:     COMRAM   BANK0   BANK1   BANK2   BANK3   BANK4   BANK5   BANK6   BANK7   BANK8   BANK9  BANK10  BANK1
+      +1  BANK12  BANK13  BANK14  BANK15
+   557 ;;      Params:         2       0       0       0       0       0       0       0       0       0       0       0       
+      +0       0       0       0       0
+   558 ;;      Locals:        12       0       0       0       0       0       0       0       0       0       0       0       
+      +0       0       0       0       0
+   559 ;;      Temps:          2       0       0       0       0       0       0       0       0       0       0       0       
+      +0       0       0       0       0
+   560 ;;      Totals:        16       0       0       0       0       0       0       0       0       0       0       0       
+      +0       0       0       0       0
+   561 ;;Total ram usage:       16 bytes
+   562 ;; Hardware stack levels used:    1
+   563 ;; Hardware stack levels required when called:    4
+   564 ;; This function calls:
+   565 ;;		_DisplayV
+   566 ;; This function is called by:
+   567 ;;		_Initial
+   568 ;; This function uses a non-reentrant model
+   569 ;;
+   570                           
+   571                           	psect	text3
+   572  0011AE                     __ptext3:
+   573                           	opt callstack 0
+   574  0011AE                     _DisplayC:
+   575                           	opt callstack 25
+   576  0011AE                     
+   577                           ;C:/Users/wyatt/Documents/ASEN 4519/Lab 5/LCDroutinesEasyPic.c: 98:     char temp[10];;C
+      +                          :/Users/wyatt/Documents/ASEN 4519/Lab 5/LCDroutinesEasyPic.c: 100:     for(int i = 0; i<
+      +                          10 ; i++){
+   578  0011AE  0E00               	movlw	0
+   579  0011B0  6E17               	movwf	(DisplayC@i+1)^0,c
+   580  0011B2  0E00               	movlw	0
+   581  0011B4  6E16               	movwf	DisplayC@i^0,c
+   582  0011B6                     l989:
+   583                           
+   584                           ;C:/Users/wyatt/Documents/ASEN 4519/Lab 5/LCDroutinesEasyPic.c: 101:         temp[i] = L
+      +                          CDStr[i];
+   585  0011B6  5016               	movf	DisplayC@i^0,w,c
+   586  0011B8  2408               	addwf	DisplayC@LCDStr^0,w,c
+   587  0011BA  6E0A               	movwf	??_DisplayC^0,c
+   588  0011BC  5017               	movf	(DisplayC@i+1)^0,w,c
+   589  0011BE  2009               	addwfc	(DisplayC@LCDStr+1)^0,w,c
+   590  0011C0  6E0B               	movwf	(??_DisplayC+1)^0,c
+   591  0011C2  C00A  FFF6         	movff	??_DisplayC,tblptrl
+   592  0011C6  C00B  FFF7         	movff	??_DisplayC+1,tblptrh
+   593  0011CA                     	if	0	;tblptru may be non-zero
+   594  0011CA                     	endif
+   595  0011CA                     	if	0	;tblptru may be non-zero
+   596  0011CA                     	endif
+   597  0011CA  0E0C               	movlw	low DisplayC@temp
+   598  0011CC  2416               	addwf	DisplayC@i^0,w,c
+   599  0011CE  6ED9               	movwf	fsr2l,c
+   600  0011D0  0E00               	movlw	high DisplayC@temp
+   601  0011D2  2017               	addwfc	(DisplayC@i+1)^0,w,c
+   602  0011D4  6EDA               	movwf	fsr2h,c
+   603  0011D6  0008               	tblrd		*
+   604  0011D8  CFF5 FFDF          	movff	tablat,indf2
+   605  0011DC                     
+   606                           ;C:/Users/wyatt/Documents/ASEN 4519/Lab 5/LCDroutinesEasyPic.c: 102:     }
+   607  0011DC  4A16               	infsnz	DisplayC@i^0,f,c
+   608  0011DE  2A17               	incf	(DisplayC@i+1)^0,f,c
+   609  0011E0  BE17               	btfsc	(DisplayC@i+1)^0,7,c
+   610  0011E2  EFFC  F008         	goto	u151
+   611  0011E6  5017               	movf	(DisplayC@i+1)^0,w,c
+   612  0011E8  E109               	bnz	u150
+   613  0011EA  0E0A               	movlw	10
+   614  0011EC  5C16               	subwf	DisplayC@i^0,w,c
+   615  0011EE  A0D8               	btfss	status,0,c
+   616  0011F0  EFFC  F008         	goto	u151
+   617  0011F4  EFFE  F008         	goto	u150
+   618  0011F8                     u151:
+   619  0011F8  EFDB  F008         	goto	l989
+   620  0011FC                     u150:
+   621  0011FC                     
+   622                           ;C:/Users/wyatt/Documents/ASEN 4519/Lab 5/LCDroutinesEasyPic.c: 103:     DisplayV(temp);
+   623  0011FC  0E0C               	movlw	low DisplayC@temp
+   624  0011FE  6E04               	movwf	DisplayV@LCDStr^0,c
+   625  001200  0E00               	movlw	high DisplayC@temp
+   626  001202  6E05               	movwf	(DisplayV@LCDStr+1)^0,c
+   627  001204  EC7F  F008         	call	_DisplayV	;wreg free
+   628  001208  0012               	return		;funcret
+   629  00120A                     __end_of_DisplayC:
+   630                           	opt callstack 0
+   631                           
+   632 ;; *************** function _DisplayV *****************
+   633 ;; Defined at:
+   634 ;;		line 116 in file "C:/Users/wyatt/Documents/ASEN 4519/Lab 5/LCDroutinesEasyPic.c"
+   635 ;; Parameters:    Size  Location     Type
+   636 ;;  LCDStr          2    3[COMRAM] PTR const unsigned char 
+   637 ;;		 -> DisplayC@temp(10), 
+   638 ;; Auto vars:     Size  Location     Type
+   639 ;;  count           1    6[COMRAM] unsigned char 
+   640 ;;  nibble          1    5[COMRAM] unsigned char 
+   641 ;; Return value:  Size  Location     Type
+   642 ;;                  1    wreg      void 
+   643 ;; Registers used:
+   644 ;;		wreg, fsr2l, fsr2h, status,2, status,0
+   645 ;; Tracked objects:
+   646 ;;		On entry : 0/0
+   647 ;;		On exit  : 0/0
+   648 ;;		Unchanged: 0/0
+   649 ;; Data sizes:     COMRAM   BANK0   BANK1   BANK2   BANK3   BANK4   BANK5   BANK6   BANK7   BANK8   BANK9  BANK10  BANK1
+      +1  BANK12  BANK13  BANK14  BANK15
+   650 ;;      Params:         2       0       0       0       0       0       0       0       0       0       0       0       
+      +0       0       0       0       0
+   651 ;;      Locals:         2       0       0       0       0       0       0       0       0       0       0       0       
+      +0       0       0       0       0
+   652 ;;      Temps:          0       0       0       0       0       0       0       0       0       0       0       0       
+      +0       0       0       0       0
+   653 ;;      Totals:         4       0       0       0       0       0       0       0       0       0       0       0       
+      +0       0       0       0       0
+   654 ;;Total ram usage:        4 bytes
+   655 ;; Hardware stack levels used:    1
+   656 ;; Hardware stack levels required when called:    3
+   657 ;; This function calls:
+   658 ;;		Nothing
+   659 ;; This function is called by:
+   660 ;;		_DisplayC
+   661 ;; This function uses a non-reentrant model
+   662 ;;
+   663                           
+   664                           	psect	text4
+   665  0010FE                     __ptext4:
+   666                           	opt callstack 0
+   667  0010FE                     _DisplayV:
+   668                           	opt callstack 25
+   669  0010FE                     
+   670                           ;C:/Users/wyatt/Documents/ASEN 4519/Lab 5/LCDroutinesEasyPic.c: 117:     unsigned char c
+      +                          ount = 0;
+   671  0010FE  0E00               	movlw	0
+   672  001100  6E07               	movwf	DisplayV@count^0,c
+   673                           
+   674                           ;C:/Users/wyatt/Documents/ASEN 4519/Lab 5/LCDroutinesEasyPic.c: 120:     while(LCDStr[co
+      +                          unt]!=0x00) {
+   675  001102  EFC8  F008         	goto	l90
+   676  001106                     l91:
+   677                           
+   678                           ;C:/Users/wyatt/Documents/ASEN 4519/Lab 5/LCDroutinesEasyPic.c: 122:         LATBbits.LA
+      +                          TB5 = 0;
+   679  001106  9A8A               	bcf	138,5,c	;volatile
+   680  001108                     
+   681                           ;C:/Users/wyatt/Documents/ASEN 4519/Lab 5/LCDroutinesEasyPic.c: 123:         LATB = PORT
+      +                          B & 0b11000000;
+   682  001108  5081               	movf	129,w,c	;volatile
+   683  00110A  0BC0               	andlw	192
+   684  00110C  6E8A               	movwf	138,c	;volatile
+   685  00110E                     
+   686                           ;C:/Users/wyatt/Documents/ASEN 4519/Lab 5/LCDroutinesEasyPic.c: 124:         if(count==0
+      +                          ){
+   687  00110E  5007               	movf	DisplayV@count^0,w,c
+   688  001110  A4D8               	btfss	status,2,c
+   689  001112  EF8D  F008         	goto	u91
+   690  001116  EF8F  F008         	goto	u90
+   691  00111A                     u91:
+   692  00111A  EF92  F008         	goto	l92
+   693  00111E                     u90:
+   694  00111E                     
+   695                           ;C:/Users/wyatt/Documents/ASEN 4519/Lab 5/LCDroutinesEasyPic.c: 125:             LATBbit
+      +                          s.LATB4 = 0;
+   696  00111E  988A               	bcf	138,4,c	;volatile
+   697                           
+   698                           ;C:/Users/wyatt/Documents/ASEN 4519/Lab 5/LCDroutinesEasyPic.c: 126:         }
+   699  001120  EF93  F008         	goto	l93
+   700  001124                     l92:
+   701                           
+   702                           ;C:/Users/wyatt/Documents/ASEN 4519/Lab 5/LCDroutinesEasyPic.c: 128:             LATBbit
+      +                          s.LATB4 = 1;
+   703  001124  888A               	bsf	138,4,c	;volatile
+   704  001126                     l93:
+   705                           
+   706                           ;C:/Users/wyatt/Documents/ASEN 4519/Lab 5/LCDroutinesEasyPic.c: 130:         LATBbits.LA
+      +                          TB5 = 1;
+   707  001126  8A8A               	bsf	138,5,c	;volatile
+   708  001128                     
+   709                           ;C:/Users/wyatt/Documents/ASEN 4519/Lab 5/LCDroutinesEasyPic.c: 131:         nibble = 0x
+      +                          F0 & LCDStr[count];
+   710  001128  5007               	movf	DisplayV@count^0,w,c
+   711  00112A  2404               	addwf	DisplayV@LCDStr^0,w,c
+   712  00112C  6ED9               	movwf	fsr2l,c
+   713  00112E  0E00               	movlw	0
+   714  001130  2005               	addwfc	(DisplayV@LCDStr+1)^0,w,c
+   715  001132  6EDA               	movwf	fsr2h,c
+   716  001134  50DF               	movf	indf2,w,c
+   717  001136  0BF0               	andlw	240
+   718  001138  6E06               	movwf	DisplayV@nibble^0,c
+   719  00113A                     
+   720                           ;C:/Users/wyatt/Documents/ASEN 4519/Lab 5/LCDroutinesEasyPic.c: 132:         nibble >>= 
+      +                          4;
+   721  00113A  3A06               	swapf	DisplayV@nibble^0,f,c
+   722  00113C  0E0F               	movlw	15
+   723  00113E  1606               	andwf	DisplayV@nibble^0,f,c
+   724  001140                     
+   725                           ;C:/Users/wyatt/Documents/ASEN 4519/Lab 5/LCDroutinesEasyPic.c: 133:     LATB |= nibble;
+   726  001140  5006               	movf	DisplayV@nibble^0,w,c	;volatile
+   727  001142  128A               	iorwf	138,f,c	;volatile
+   728  001144                     
+   729                           ;C:/Users/wyatt/Documents/ASEN 4519/Lab 5/LCDroutinesEasyPic.c: 134:         LATBbits.LA
+      +                          TB5 = 0;
+   730  001144  9A8A               	bcf	138,5,c	;volatile
+   731  001146                     
+   732                           ;C:/Users/wyatt/Documents/ASEN 4519/Lab 5/LCDroutinesEasyPic.c: 135:      _delay((unsign
+      +                          ed long)((50)*(16000000/4000000.0)));
+   733  001146  0E42               	movlw	66
+   734  001148                     u197:
+   735  001148  2EE8               	decfsz	wreg,f,c
+   736  00114A  D7FE               	bra	u197
+   737  00114C  D000               	nop2	
+   738  00114E                     
+   739                           ;C:/Users/wyatt/Documents/ASEN 4519/Lab 5/LCDroutinesEasyPic.c: 138:         LATB = PORT
+      +                          B & 0b11000000;
+   740  00114E  5081               	movf	129,w,c	;volatile
+   741  001150  0BC0               	andlw	192
+   742  001152  6E8A               	movwf	138,c	;volatile
+   743  001154                     
+   744                           ;C:/Users/wyatt/Documents/ASEN 4519/Lab 5/LCDroutinesEasyPic.c: 139:         if(count==0
+      +                          ){
+   745  001154  5007               	movf	DisplayV@count^0,w,c
+   746  001156  A4D8               	btfss	status,2,c
+   747  001158  EFB0  F008         	goto	u101
+   748  00115C  EFB2  F008         	goto	u100
+   749  001160                     u101:
+   750  001160  EFB5  F008         	goto	l94
+   751  001164                     u100:
+   752  001164                     
+   753                           ;C:/Users/wyatt/Documents/ASEN 4519/Lab 5/LCDroutinesEasyPic.c: 140:             LATBbit
+      +                          s.LATB4 = 0;
+   754  001164  988A               	bcf	138,4,c	;volatile
+   755                           
+   756                           ;C:/Users/wyatt/Documents/ASEN 4519/Lab 5/LCDroutinesEasyPic.c: 141:         }
+   757  001166  EFB6  F008         	goto	l95
+   758  00116A                     l94:
+   759                           
+   760                           ;C:/Users/wyatt/Documents/ASEN 4519/Lab 5/LCDroutinesEasyPic.c: 143:             LATBbit
+      +                          s.LATB4 = 1;
+   761  00116A  888A               	bsf	138,4,c	;volatile
+   762  00116C                     l95:
+   763                           
+   764                           ;C:/Users/wyatt/Documents/ASEN 4519/Lab 5/LCDroutinesEasyPic.c: 145:         LATBbits.LA
+      +                          TB5 = 1;
+   765  00116C  8A8A               	bsf	138,5,c	;volatile
+   766  00116E                     
+   767                           ;C:/Users/wyatt/Documents/ASEN 4519/Lab 5/LCDroutinesEasyPic.c: 147:         nibble = 0x
+      +                          0F & LCDStr[count];
+   768  00116E  5007               	movf	DisplayV@count^0,w,c
+   769  001170  2404               	addwf	DisplayV@LCDStr^0,w,c
+   770  001172  6ED9               	movwf	fsr2l,c
+   771  001174  0E00               	movlw	0
+   772  001176  2005               	addwfc	(DisplayV@LCDStr+1)^0,w,c
+   773  001178  6EDA               	movwf	fsr2h,c
+   774  00117A  50DF               	movf	indf2,w,c
+   775  00117C  0B0F               	andlw	15
+   776  00117E  6E06               	movwf	DisplayV@nibble^0,c
+   777  001180                     
+   778                           ;C:/Users/wyatt/Documents/ASEN 4519/Lab 5/LCDroutinesEasyPic.c: 149:         LATB |= nib
+      +                          ble;
+   779  001180  5006               	movf	DisplayV@nibble^0,w,c	;volatile
+   780  001182  128A               	iorwf	138,f,c	;volatile
+   781  001184                     
+   782                           ;C:/Users/wyatt/Documents/ASEN 4519/Lab 5/LCDroutinesEasyPic.c: 150:         LATBbits.LA
+      +                          TB5 = 0;
+   783  001184  9A8A               	bcf	138,5,c	;volatile
+   784  001186                     
+   785                           ;C:/Users/wyatt/Documents/ASEN 4519/Lab 5/LCDroutinesEasyPic.c: 152:         _delay((uns
+      +                          igned long)((50)*(16000000/4000000.0)));
+   786  001186  0E42               	movlw	66
+   787  001188                     u207:
+   788  001188  2EE8               	decfsz	wreg,f,c
+   789  00118A  D7FE               	bra	u207
+   790  00118C  D000               	nop2	
+   791  00118E                     
+   792                           ;C:/Users/wyatt/Documents/ASEN 4519/Lab 5/LCDroutinesEasyPic.c: 154:         count++;
+   793  00118E  2A07               	incf	DisplayV@count^0,f,c
+   794  001190                     l90:
+   795                           
+   796                           ;C:/Users/wyatt/Documents/ASEN 4519/Lab 5/LCDroutinesEasyPic.c: 120:     while(LCDStr[co
+      +                          unt]!=0x00) {
+   797  001190  5007               	movf	DisplayV@count^0,w,c
+   798  001192  2404               	addwf	DisplayV@LCDStr^0,w,c
+   799  001194  6ED9               	movwf	fsr2l,c
+   800  001196  0E00               	movlw	0
+   801  001198  2005               	addwfc	(DisplayV@LCDStr+1)^0,w,c
+   802  00119A  6EDA               	movwf	fsr2h,c
+   803  00119C  50DF               	movf	indf2,w,c
+   804  00119E  A4D8               	btfss	status,2,c
+   805  0011A0  EFD4  F008         	goto	u111
+   806  0011A4  EFD6  F008         	goto	u110
+   807  0011A8                     u111:
+   808  0011A8  EF83  F008         	goto	l91
+   809  0011AC                     u110:
+   810  0011AC  0012               	return		;funcret
+   811  0011AE                     __end_of_DisplayV:
+   812                           	opt callstack 0
+   813                           
+   814 ;; *************** function _LoPriISR *****************
+   815 ;; Defined at:
+   816 ;;		line 119 in file "C:/Users/wyatt/Documents/ASEN 4519/Lab 5/lab5b_xc8_orig.c"
+   817 ;; Parameters:    Size  Location     Type
+   818 ;;		None
+   819 ;; Auto vars:     Size  Location     Type
+   820 ;;		None
+   821 ;; Return value:  Size  Location     Type
+   822 ;;                  1    wreg      void 
+   823 ;; Registers used:
+   824 ;;		wreg, status,2, status,0, cstack
+   825 ;; Tracked objects:
+   826 ;;		On entry : 0/0
+   827 ;;		On exit  : 0/0
+   828 ;;		Unchanged: 0/0
+   829 ;; Data sizes:     COMRAM   BANK0   BANK1   BANK2   BANK3   BANK4   BANK5   BANK6   BANK7   BANK8   BANK9  BANK10  BANK1
+      +1  BANK12  BANK13  BANK14  BANK15
+   830 ;;      Params:         0       0       0       0       0       0       0       0       0       0       0       0       
+      +0       0       0       0       0
+   831 ;;      Locals:         0       0       0       0       0       0       0       0       0       0       0       0       
+      +0       0       0       0       0
+   832 ;;      Temps:          3       0       0       0       0       0       0       0       0       0       0       0       
+      +0       0       0       0       0
+   833 ;;      Totals:         3       0       0       0       0       0       0       0       0       0       0       0       
+      +0       0       0       0       0
+   834 ;;Total ram usage:        3 bytes
+   835 ;; Hardware stack levels used:    1
+   836 ;; Hardware stack levels required when called:    2
+   837 ;; This function calls:
+   838 ;;		_TMR0handler
+   839 ;; This function is called by:
+   840 ;;		Interrupt level 1
+   841 ;; This function uses a non-reentrant model
+   842 ;;
+   843                           
+   844                           	psect	intcodelo
+   845  000018                     __pintcodelo:
+   846                           	opt callstack 0
+   847  000018                     _LoPriISR:
+   848                           	opt callstack 25
+   849                           
+   850                           ;incstack = 0
+   851  000018  801A               	bsf	int$flags,0,c	;set compiler interrupt flag (level 1)
+   852  00001A  CFD8 F001          	movff	status,??_LoPriISR
+   853  00001E  CFE8 F002          	movff	wreg,??_LoPriISR+1
+   854  000022  CFE0 F003          	movff	bsr,??_LoPriISR+2
+   855  000026                     i1l55:
+   856                           
+   857                           ;C:/Users/wyatt/Documents/ASEN 4519/Lab 5/lab5b_xc8_orig.c: 122:         if( INTCONbits.
+      +                          TMR0IF ) {
+   858  000026  A4F2               	btfss	242,2,c	;volatile
+   859  000028  EF18  F000         	goto	i1u8_21
+   860  00002C  EF1A  F000         	goto	i1u8_20
+   861  000030                     i1u8_21:
+   862  000030  EF1E  F000         	goto	i1l59
+   863  000034                     i1u8_20:
+   864  000034                     
+   865                           ;C:/Users/wyatt/Documents/ASEN 4519/Lab 5/lab5b_xc8_orig.c: 123:             TMR0handler
+      +                          ();
+   866  000034  EC2F  F009         	call	_TMR0handler	;wreg free
+   867                           
+   868                           ;C:/Users/wyatt/Documents/ASEN 4519/Lab 5/lab5b_xc8_orig.c: 124:             continue;
+   869  000038  EF13  F000         	goto	i1l55
+   870  00003C                     i1l59:
+   871  00003C  C003  FFE0         	movff	??_LoPriISR+2,bsr
+   872  000040  C002  FFE8         	movff	??_LoPriISR+1,wreg
+   873  000044  C001  FFD8         	movff	??_LoPriISR,status
+   874  000048  901A               	bcf	int$flags,0,c	;clear compiler interrupt flag (level 1)
+   875  00004A  0010               	retfie	
+   876  00004C                     __end_of_LoPriISR:
+   877                           	opt callstack 0
+   878                           
+   879 ;; *************** function _TMR0handler *****************
+   880 ;; Defined at:
+   881 ;;		line 135 in file "C:/Users/wyatt/Documents/ASEN 4519/Lab 5/lab5b_xc8_orig.c"
+   882 ;; Parameters:    Size  Location     Type
+   883 ;;		None
+   884 ;; Auto vars:     Size  Location     Type
+   885 ;;		None
+   886 ;; Return value:  Size  Location     Type
+   887 ;;                  1    wreg      void 
+   888 ;; Registers used:
+   889 ;;		wreg, status,2, status,0
+   890 ;; Tracked objects:
+   891 ;;		On entry : 0/0
+   892 ;;		On exit  : 0/0
+   893 ;;		Unchanged: 0/0
+   894 ;; Data sizes:     COMRAM   BANK0   BANK1   BANK2   BANK3   BANK4   BANK5   BANK6   BANK7   BANK8   BANK9  BANK10  BANK1
+      +1  BANK12  BANK13  BANK14  BANK15
+   895 ;;      Params:         0       0       0       0       0       0       0       0       0       0       0       0       
+      +0       0       0       0       0
+   896 ;;      Locals:         0       0       0       0       0       0       0       0       0       0       0       0       
+      +0       0       0       0       0
+   897 ;;      Temps:          0       0       0       0       0       0       0       0       0       0       0       0       
+      +0       0       0       0       0
+   898 ;;      Totals:         0       0       0       0       0       0       0       0       0       0       0       0       
+      +0       0       0       0       0
+   899 ;;Total ram usage:        0 bytes
+   900 ;; Hardware stack levels used:    1
+   901 ;; Hardware stack levels required when called:    1
+   902 ;; This function calls:
+   903 ;;		Nothing
+   904 ;; This function is called by:
+   905 ;;		_LoPriISR
+   906 ;; This function uses a non-reentrant model
+   907 ;;
+   908                           
+   909                           	psect	text6
+   910  00125E                     __ptext6:
+   911                           	opt callstack 0
+   912  00125E                     _TMR0handler:
+   913                           	opt callstack 25
+   914  00125E                     
+   915                           ;C:/Users/wyatt/Documents/ASEN 4519/Lab 5/lab5b_xc8_orig.c: 140:     LATD ^= 0b00010000;
+   916  00125E  0E10               	movlw	16
+   917  001260  1A8C               	xorwf	140,f,c	;volatile
+   918  001262                     
+   919                           ;C:/Users/wyatt/Documents/ASEN 4519/Lab 5/lab5b_xc8_orig.c: 141:     TMR0L = 0xDB;
+   920  001262  0EDB               	movlw	219
+   921  001264  6ED6               	movwf	214,c	;volatile
+   922  001266                     
+   923                           ;C:/Users/wyatt/Documents/ASEN 4519/Lab 5/lab5b_xc8_orig.c: 142:     TMR0H = 0x0B;
+   924  001266  0E0B               	movlw	11
+   925  001268  6ED7               	movwf	215,c	;volatile
+   926  00126A                     
+   927                           ;C:/Users/wyatt/Documents/ASEN 4519/Lab 5/lab5b_xc8_orig.c: 144:     INTCONbits.TMR0IF =
+      +                           0;
+   928  00126A  94F2               	bcf	242,2,c	;volatile
+   929  00126C  0012               	return		;funcret
+   930  00126E                     __end_of_TMR0handler:
+   931                           	opt callstack 0
+   932                           
+   933 ;; *************** function _HiPriISR *****************
+   934 ;; Defined at:
+   935 ;;		line 108 in file "C:/Users/wyatt/Documents/ASEN 4519/Lab 5/lab5b_xc8_orig.c"
+   936 ;; Parameters:    Size  Location     Type
+   937 ;;		None
+   938 ;; Auto vars:     Size  Location     Type
+   939 ;;		None
+   940 ;; Return value:  Size  Location     Type
+   941 ;;                  1    wreg      void 
+   942 ;; Registers used:
+   943 ;;		None
+   944 ;; Tracked objects:
+   945 ;;		On entry : 0/0
+   946 ;;		On exit  : 0/0
+   947 ;;		Unchanged: 0/0
+   948 ;; Data sizes:     COMRAM   BANK0   BANK1   BANK2   BANK3   BANK4   BANK5   BANK6   BANK7   BANK8   BANK9  BANK10  BANK1
+      +1  BANK12  BANK13  BANK14  BANK15
+   949 ;;      Params:         0       0       0       0       0       0       0       0       0       0       0       0       
+      +0       0       0       0       0
+   950 ;;      Locals:         0       0       0       0       0       0       0       0       0       0       0       0       
+      +0       0       0       0       0
+   951 ;;      Temps:          0       0       0       0       0       0       0       0       0       0       0       0       
+      +0       0       0       0       0
+   952 ;;      Totals:         0       0       0       0       0       0       0       0       0       0       0       0       
+      +0       0       0       0       0
+   953 ;;Total ram usage:        0 bytes
+   954 ;; Hardware stack levels used:    1
+   955 ;; This function calls:
+   956 ;;		Nothing
+   957 ;; This function is called by:
+   958 ;;		Interrupt level 2
+   959 ;; This function uses a non-reentrant model
+   960 ;;
+   961                           
+   962                           	psect	intcode
+   963  000008                     __pintcode:
+   964                           	opt callstack 0
+   965  000008                     _HiPriISR:
+   966                           	opt callstack 25
+   967                           
+   968                           ;incstack = 0
+   969  000008  821A               	bsf	int$flags,1,c	;set compiler interrupt flag (level 2)
+   970  00000A  EF3D  F009         	goto	int_func
+   971                           
+   972                           	psect	intcode_body
+   973  00127A                     __pintcode_body:
+   974                           	opt callstack 25
+   975  00127A                     int_func:
+   976                           	opt callstack 25
+   977  00127A  921A               	bcf	int$flags,1,c	;clear compiler interrupt flag (level 2)
+   978  00127C  0011               	retfie		f
+   979  00127E                     __end_of_HiPriISR:
+   980                           	opt callstack 0
+   981                           
+   982                           	psect	rparam
+   983  0000                     
+   984                           	psect	temp
+   985  00001A                     btemp:
+   986                           	opt callstack 0
+   987  00001A                     	ds	1
+   988  0000                     int$flags	set	btemp
+   989  0000                     wtemp8	set	btemp+1
+   990  0000                     ttemp5	set	btemp+1
+   991  0000                     ttemp6	set	btemp+4
+   992  0000                     ttemp7	set	btemp+8
+   993                           tosu	equ	0xFFF
+   994                           tosh	equ	0xFFE
+   995                           tosl	equ	0xFFD
+   996                           stkptr	equ	0xFFC
+   997                           pclatu	equ	0xFFB
+   998                           pclath	equ	0xFFA
+   999                           pcl	equ	0xFF9
+  1000                           tblptru	equ	0xFF8
+  1001                           tblptrh	equ	0xFF7
+  1002                           tblptrl	equ	0xFF6
+  1003                           tablat	equ	0xFF5
+  1004                           prodh	equ	0xFF4
+  1005                           prodl	equ	0xFF3
+  1006                           indf0	equ	0xFEF
+  1007                           postinc0	equ	0xFEE
+  1008                           postdec0	equ	0xFED
+  1009                           preinc0	equ	0xFEC
+  1010                           plusw0	equ	0xFEB
+  1011                           fsr0h	equ	0xFEA
+  1012                           fsr0l	equ	0xFE9
+  1013                           wreg	equ	0xFE8
+  1014                           indf1	equ	0xFE7
+  1015                           postinc1	equ	0xFE6
+  1016                           postdec1	equ	0xFE5
+  1017                           preinc1	equ	0xFE4
+  1018                           plusw1	equ	0xFE3
+  1019                           fsr1h	equ	0xFE2
+  1020                           fsr1l	equ	0xFE1
+  1021                           bsr	equ	0xFE0
+  1022                           indf2	equ	0xFDF
+  1023                           postinc2	equ	0xFDE
+  1024                           postdec2	equ	0xFDD
+  1025                           preinc2	equ	0xFDC
+  1026                           plusw2	equ	0xFDB
+  1027                           fsr2h	equ	0xFDA
+  1028                           fsr2l	equ	0xFD9
+  1029                           status	equ	0xFD8
+
+
+Data Sizes:
+    Strings     11
+    Constant    7
+    Data        0
+    BSS         2
+    Persistent  0
+    Stack       0
+
+Auto Spaces:
+    Space          Size  Autos    Used
+    COMRAM           94     23      25
+    BANK0           160      0       0
+    BANK1           256      0       0
+    BANK2           256      0       0
+    BANK3           256      0       0
+    BANK4           256      0       0
+    BANK5           256      0       0
+    BANK6           256      0       0
+    BANK7           256      0       0
+    BANK8           256      0       0
+    BANK9           256      0       0
+    BANK10          256      0       0
+    BANK11          256      0       0
+    BANK12          256      0       0
+    BANK13          256      0       0
+    BANK14          256      0       0
+    BANK15           22      0       0
+
+Pointer List with Targets:
+
+    DisplayV@LCDStr	PTR const unsigned char  size(2) Largest target is 10
+		 -> DisplayC@temp(COMRAM[10]), 
+
+    DisplayC@LCDStr	PTR const unsigned char  size(2) Largest target is 11
+		 -> STR_1(CODE[11]), 
+
+
+Critical Paths under _main in COMRAM
+
+    _Initial->_DisplayC
+    _DisplayC->_DisplayV
+
+Critical Paths under _LoPriISR in COMRAM
+
+    None.
+
+Critical Paths under _HiPriISR in COMRAM
+
+    None.
+
+Critical Paths under _main in BANK0
+
+    None.
+
+Critical Paths under _LoPriISR in BANK0
+
+    None.
+
+Critical Paths under _HiPriISR in BANK0
+
+    None.
+
+Critical Paths under _main in BANK1
+
+    None.
+
+Critical Paths under _LoPriISR in BANK1
+
+    None.
+
+Critical Paths under _HiPriISR in BANK1
+
+    None.
+
+Critical Paths under _main in BANK2
+
+    None.
+
+Critical Paths under _LoPriISR in BANK2
+
+    None.
+
+Critical Paths under _HiPriISR in BANK2
+
+    None.
+
+Critical Paths under _main in BANK3
+
+    None.
+
+Critical Paths under _LoPriISR in BANK3
+
+    None.
+
+Critical Paths under _HiPriISR in BANK3
+
+    None.
+
+Critical Paths under _main in BANK4
+
+    None.
+
+Critical Paths under _LoPriISR in BANK4
+
+    None.
+
+Critical Paths under _HiPriISR in BANK4
+
+    None.
+
+Critical Paths under _main in BANK5
+
+    None.
+
+Critical Paths under _LoPriISR in BANK5
+
+    None.
+
+Critical Paths under _HiPriISR in BANK5
+
+    None.
+
+Critical Paths under _main in BANK6
+
+    None.
+
+Critical Paths under _LoPriISR in BANK6
+
+    None.
+
+Critical Paths under _HiPriISR in BANK6
+
+    None.
+
+Critical Paths under _main in BANK7
+
+    None.
+
+Critical Paths under _LoPriISR in BANK7
+
+    None.
+
+Critical Paths under _HiPriISR in BANK7
+
+    None.
+
+Critical Paths under _main in BANK8
+
+    None.
+
+Critical Paths under _LoPriISR in BANK8
+
+    None.
+
+Critical Paths under _HiPriISR in BANK8
+
+    None.
+
+Critical Paths under _main in BANK9
+
+    None.
+
+Critical Paths under _LoPriISR in BANK9
+
+    None.
+
+Critical Paths under _HiPriISR in BANK9
+
+    None.
+
+Critical Paths under _main in BANK10
+
+    None.
+
+Critical Paths under _LoPriISR in BANK10
+
+    None.
+
+Critical Paths under _HiPriISR in BANK10
+
+    None.
+
+Critical Paths under _main in BANK11
+
+    None.
+
+Critical Paths under _LoPriISR in BANK11
+
+    None.
+
+Critical Paths under _HiPriISR in BANK11
+
+    None.
+
+Critical Paths under _main in BANK12
+
+    None.
+
+Critical Paths under _LoPriISR in BANK12
+
+    None.
+
+Critical Paths under _HiPriISR in BANK12
+
+    None.
+
+Critical Paths under _main in BANK13
+
+    None.
+
+Critical Paths under _LoPriISR in BANK13
+
+    None.
+
+Critical Paths under _HiPriISR in BANK13
+
+    None.
+
+Critical Paths under _main in BANK14
+
+    None.
+
+Critical Paths under _LoPriISR in BANK14
+
+    None.
+
+Critical Paths under _HiPriISR in BANK14
+
+    None.
+
+Critical Paths under _main in BANK15
+
+    None.
+
+Critical Paths under _LoPriISR in BANK15
+
+    None.
+
+Critical Paths under _HiPriISR in BANK15
+
+    None.
+
+Call Graph Tables:
+
+ ---------------------------------------------------------------------------------
+ (Depth) Function   	        Calls       Base Space   Used Autos Params    Refs
+ ---------------------------------------------------------------------------------
+ (0) _main                                                 0     0      0     724
+                            _Initial
+ ---------------------------------------------------------------------------------
+ (1) _Initial                                              0     0      0     724
+                           _DisplayC
+                            _InitLCD
+ ---------------------------------------------------------------------------------
+ (2) _InitLCD                                              4     4      0     185
+                                              3 COMRAM     4     4      0
+ ---------------------------------------------------------------------------------
+ (2) _DisplayC                                            16    14      2     539
+                                              7 COMRAM    16    14      2
+                           _DisplayV
+ ---------------------------------------------------------------------------------
+ (3) _DisplayV                                             4     2      2     302
+                                              3 COMRAM     4     2      2
+ ---------------------------------------------------------------------------------
+ Estimated maximum stack depth 3
+ ---------------------------------------------------------------------------------
+ (Depth) Function   	        Calls       Base Space   Used Autos Params    Refs
+ ---------------------------------------------------------------------------------
+ (4) _LoPriISR                                             3     3      0       0
+                                              0 COMRAM     3     3      0
+                        _TMR0handler
+ ---------------------------------------------------------------------------------
+ (5) _TMR0handler                                          0     0      0       0
+ ---------------------------------------------------------------------------------
+ Estimated maximum stack depth 5
+ ---------------------------------------------------------------------------------
+ (Depth) Function   	        Calls       Base Space   Used Autos Params    Refs
+ ---------------------------------------------------------------------------------
+ (6) _HiPriISR                                             0     0      0       0
+ ---------------------------------------------------------------------------------
+ Estimated maximum stack depth 6
+ ---------------------------------------------------------------------------------
+
+ Call Graph Graphs:
+
+ _main (ROOT)
+   _Initial
+     _DisplayC
+       _DisplayV
+     _InitLCD
+
+ _LoPriISR (ROOT)
+   _TMR0handler
+
+ _HiPriISR (ROOT)
+
+ Address spaces:
+Name               Size   Autos  Total    Cost      Usage
+BIGRAM             F15      0       0      37        0.0%
+EEDATA             400      0       0       0        0.0%
+BITBANK14          100      0       0      33        0.0%
+BANK14             100      0       0      34        0.0%
+BITBANK13          100      0       0      31        0.0%
+BANK13             100      0       0      32        0.0%
+BITBANK12          100      0       0      29        0.0%
+BANK12             100      0       0      30        0.0%
+BITBANK11          100      0       0      27        0.0%
+BANK11             100      0       0      28        0.0%
+BITBANK10          100      0       0      25        0.0%
+BANK10             100      0       0      26        0.0%
+BITBANK9           100      0       0      23        0.0%
+BANK9              100      0       0      24        0.0%
+BITBANK8           100      0       0      21        0.0%
+BANK8              100      0       0      22        0.0%
+BITBANK7           100      0       0      19        0.0%
+BANK7              100      0       0      20        0.0%
+BITBANK6           100      0       0      17        0.0%
+BANK6              100      0       0      18        0.0%
+BITBANK5           100      0       0      15        0.0%
+BANK5              100      0       0      16        0.0%
+BITBANK4           100      0       0      13        0.0%
+BANK4              100      0       0      14        0.0%
+BITBANK3           100      0       0      10        0.0%
+BANK3              100      0       0      11        0.0%
+BITBANK2           100      0       0       8        0.0%
+BANK2              100      0       0       9        0.0%
+BITBANK1           100      0       0       6        0.0%
+BANK1              100      0       0       7        0.0%
+BITBANK0            A0      0       0       4        0.0%
+BANK0               A0      0       0       5        0.0%
+BITCOMRAM           5E      0       0       0        0.0%
+COMRAM              5E     17      19       1       26.6%
+BITBANK15           16      0       0      35        0.0%
+BANK15              16      0       0      36        0.0%
+BITSFR_1             0      0       0     200        0.0%
+SFR_1                0      0       0     200        0.0%
+BITSFR               0      0       0     200        0.0%
+SFR                  0      0       0     200        0.0%
+STACK                0      0       0       2        0.0%
+NULL                 0      0       0       0        0.0%
+ABS                  0      0      19      12        0.0%
+DATA                 0      0      19       3        0.0%
+CODE                 0      0       0       0        0.0%
+
+
+Microchip Technology PIC18 Macro Assembler V2.10 build 88905656 
+Symbol Table                                                                                   Tue Oct 29 14:24:33 2019
+
+                     l40 1272                       l45 1246                       l39 1272  
+                     l81 10FA                       l90 1190                       l82 10FC  
+                     l91 1106                       l92 1124                       l93 1126  
+                     l94 116A                       l95 116C                       l87 1208  
+                     l97 11AC                       u90 111E                       u91 111A  
+                     bsr 000FE0              __CFG_BORV$2 000000                      l911 1128  
+                    l903 10FE                      l921 114E                      l913 113A  
+                    l905 1108                      l931 1184                      l923 1154  
+                    l915 1140                      l907 110E                      l933 1186  
+                    l925 1164                      l917 1144                      l909 111E  
+                    l941 1026                      l935 118E                      l927 116E  
+                    l919 1146                      l951 104C                      l943 102C  
+                    l929 1180                      l961 1076                      l953 1060  
+                    l945 1030                      l937 1014                      l971 10C0  
+                    l963 1088                      l955 1062                      l947 1032  
+                    l939 1018                      l973 10C4                      l965 108C  
+                    l957 1070                      l949 1046                      l981 10DA  
+                    l991 11DC                      l983 11AE                      l975 10C8  
+                    l967 1090                      l959 1074                      l993 11E0  
+                    l977 10CA                      l969 10A0                      l995 11FC  
+                    l979 10D8                      l989 11B6                      l997 120A  
+                    l999 121E                      u100 1164                      u101 1160  
+                    u110 11AC                      u111 11A8                      u120 10A0  
+                    u121 109C                      u130 10C0                      u131 10BC  
+                    u140 10FA                      u141 10F6                      u150 11FC  
+                    u207 1188                      u151 11F8                      u167 101E  
+                    u177 1068                      u187 10D0                      u197 1148  
+                    wreg 000FE8                     l1001 1222                     l1011 123C  
+                   l1003 122E                     l1013 123E                     l1005 1232  
+                   l1021 126E                     l1015 1240                     l1007 1236  
+                   l1017 1242                     l1009 123A                     l1019 1244  
+                   STR_1 1008                     _LATB 000F8A                     _LATC 000F8B  
+                   _LATD 000F8C                     i1l62 126C                     i1l55 0026  
+                   i2l50 127A                     i1l59 003C             InitLCD@count 0007  
+                   _main 126E                     indf2 000FDF                     fsr2l 000FD9  
+                   btemp 001A            __CFG_BOREN$ON 000000                     start 004C  
+          __CFG_FOSC$HS1 000000             ___param_bank 000000          __end_of_InitLCD 10FE  
+        __end_of_Initial 1248                    ?_main 0001                    _T0CON 000FD5  
+                  i1l901 0034                    i1l891 125E                    i1l893 1262  
+                  i1l895 1266                    i1l897 126A                    _TMR0H 000FD7  
+                  _TMR0L 000FD6                    _PORTB 000F81                    _TRISB 000F93  
+                  _TRISC 000F94                    _TRISD 000F95            InitLCD@nibble 0006  
+                  tablat 000FF5                    ttemp5 001B                    ttemp6 001E  
+                  ttemp7 0022                    status 000FD8                    wtemp8 001B  
+       __end_of_HiPriISR 127E          __initialization 1248         __end_of_DisplayC 120A  
+       __end_of_DisplayV 11AE         __end_of_LoPriISR 004C              _Alive_count 0018  
+           __end_of_main 127A                   ??_main 0018            __activetblptr 000001  
+         __CFG_WDTEN$OFF 000000                   i1u8_20 0034                   i1u8_21 0030  
+              ??_InitLCD 0004                ??_Initial 0018           __CFG_PWRTEN$ON 000000  
+         __CFG_XINST$OFF 000000              _InitLCD$358 0005             ?_TMR0handler 0001  
+           __mediumconst 0000                   tblptrh 000FF7                   tblptrl 000FF6  
+                 tblptru 000FF8               __accesstop 0060  __end_of__initialization 124C  
+          ___rparam_used 000001           __pcstackCOMRAM 0001                ?_HiPriISR 0001  
+              ?_DisplayC 0008                ?_DisplayV 0004                ?_LoPriISR 0001  
+        __CFG_PLLCFG$OFF 000000               ??_HiPriISR 0001               ??_DisplayC 000A  
+             ??_DisplayV 0006               ??_LoPriISR 0001                  _InitLCD 1014  
+                _Initial 120A                  __Hparam 0000                  __Lparam 0000  
+           __psmallconst 1000                  __pcinit 1248                  __ramtop 1000  
+                __ptext0 126E                  __ptext1 120A                  __ptext2 1014  
+                __ptext3 11AE                  __ptext4 10FE                  __ptext6 125E  
+              _T0CONbits 000FD5     __size_of_TMR0handler 0010           __pintcode_body 127A  
+   end_of_initialization 124C                  int_func 127A                DisplayC@i 0016  
+    start_initialization 1248        __size_of_HiPriISR 1276        __size_of_DisplayC 005C  
+      __size_of_DisplayV 00B0        __size_of_LoPriISR 0034      __end_of_LCDInitStr_ 1008  
+            __pbssCOMRAM 0018                 ?_InitLCD 0001                 ?_Initial 0001  
+         DisplayC@LCDStr 0008        __CFG_CCP2MX$PORTC 000000                __pintcode 0008  
+            __pintcodelo 0018              __smallconst 1000           DisplayV@LCDStr 0004  
+               _LATBbits 000F8A                 _RCONbits 000FD0           DisplayV@nibble 0006  
+            _LCDInitStr_ 1001            ??_TMR0handler 0001                 _HiPriISR 0008  
+            _INTCON2bits 000FF1                 _DisplayC 11AE                 _DisplayV 10FE  
+               _LoPriISR 0018         __size_of_InitLCD 00EA                 __Hrparam 0000  
+       __size_of_Initial 003E                 __Lrparam 0000             __Lsmallconst 1000  
+    __end_of_TMR0handler 126E            __size_of_main 000C            DisplayV@count 0007  
+               int$flags 001A               _INTCONbits 000FF2                 intlevel1 0000  
+               intlevel2 0000             DisplayC@temp 000C              _TMR0handler 125E  

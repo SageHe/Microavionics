@@ -1,0 +1,925 @@
+MPASM 5.84             HERRIN_SAGE_LAB_5.ASM   10-28-2020  0:45:28         PAGE  1
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+                      00001 ;;;;;;; ASEN 4-5067 Lab 5 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+                      00002 ;
+                      00003 ; Generate a jitterfree 10 Hz square wave on CCP1 output using compare mode
+                      00004 ; with 24bit extension bytes.
+                      00005 ; Use 16 MHz crystal and 4 MHz internal clock rate.
+                      00006 ;
+                      00007 ;;;;;;; Program hierarchy ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+                      00008 ;
+                      00009 ;Mainline
+                      00010 ;  Initial
+                      00011 ;
+                      00012 ;HiPriISR 
+                      00013 ;  (Consider using for other timing events)
+                      00014 ;LoPriISR
+                      00015 ;  CCP1handler
+                      00016 ;  TMR1handler
+                      00017 ;
+                      00018 ;;;;;;; Assembler directives ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+                      00019 
+                      00020         LIST  P=PIC18F87K22, F=INHX32, C=160, N=0, ST=OFF, MM=OFF, R=DEC, X=ON
+                      00021         #include P18F87K22.inc
+                      00001         LIST
+                      00002 
+                      00003 ;==========================================================================
+                      00004 ; Build date : Mar 17 2019
+                      00005 ;  MPASM PIC18F87K22 processor include
+                      00006 ; 
+                      00007 ;  (c) Copyright 1999-2019 Microchip Technology, All rights reserved
+                      00008 ;==========================================================================
+                      00009 
+                      02986         LIST
+                      00022 
+                      00023 ;               MPLAB configuration directives
+                      00024 
+                      00025                 CONFIG  FOSC = HS1, XINST = OFF
+                      00026                 CONFIG  PWRTEN = ON, BOREN = ON, BORV = 1
+                      00027                 CONFIG  WDTEN = OFF
+                      00028                 CONFIG  CCP2MX = PORTC  
+                      00029 
+                      00030         errorlevel -311         ; Turn off message when 3-byte variable is loaded (24bit)
+                      00031 
+  00030D40            00032 HalfPeriod  equ  200000         ; Number of 250 ns instruction cycles in 0.05 sec (Half of 10 Hz)
+  000128E0            00033 PWMLOW      equ  76000
+  00000FA0            00034 PWMHIGH     equ  4000   
+  0030D400            00035 ALIVELOW    equ  3200000
+  000C3500            00036 ALIVEHIGH   equ  800000    
+  00000028            00037 DPWM        equ  40   
+  00000BDC            00038 Bignum      equ  65536 - 62500  
+                      00039 
+                      00040 ;;;;;;; Variables ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+                      00041 
+                      00042         cblock  0x000
+  00000000            00043         WREG_TEMP               ; Temp variables used in Low Pri ISR
+  00000001            00044         STATUS_TEMP
+  00000002            00045         TMR1X                   ; Eight-bit extension to TMR1
+  00000003            00046         CCPR1X                  ; Eight-bit extension to CCPR1
+  00000004            00047         CCPR2X                  ; Eight-bit extension to CCPR2
+  00000005            00048         DTIMEX                  ; Delta time variable of half period of square wave
+  00000006            00049         DTIMEH                  ; Will copy HalfPeriod constant into these registers
+  00000007            00050         DTIMEL
+  00000008            00051         DIR_RPG                 ; Direction of RPG
+  00000009            00052         RPG_TEMP                ; Temp variable used for RPG state
+  0000000A            00053         OLDPORTD                ; Used to hold previous state of RPG
+  0000000B            00054         PWMLOWL
+  0000000C            00055         PWMLOWH
+  0000000D            00056         PWMLOWX
+  0000000E            00057         PWMHIGHL
+  0000000F            00058         PWMHIGHH
+  00000010            00059         PWMHIGHX
+  00000011            00060         ALIVELOWL
+  00000012            00061         ALIVELOWH
+  00000013            00062         ALIVELOWX
+  00000014            00063         ALIVEHIGHL
+  00000015            00064         ALIVEHIGHH
+  00000016            00065         ALIVEHIGHX
+                      00066         ;DTLOWPWMLOW
+                      00067         ;DTLOWPWMHIGH
+                      00068         ;DTLOWPWMX
+                      00069         ;DTHIGHPWMLOW
+                      00070         ;DTHIGHPWMHIGH
+                      00071         ;DTHIGHPWMX
+                      00072         ;DTLOWALIVELOW
+                      00073         ;DTLOWALIVEHIGH
+                      00074         ;DTLOWALIVEX
+                      00075         ;DTHIGHALIVELOW
+                      00076         ;DTHIGHALIVEHIGH
+                      00077         ;DTHIGHALIVEX
+  00000017            00078         DPWML
+  00000018            00079         DPWMH
+  00000019            00080         DPWMX
+  0000001A            00081         COUNT                   ; Counter available as local to subroutines
+  0000001B            00082         ALIVECNT                ; Counter for blinking "Alive" LED
+  0000001C            00083         BYTE                    ; Byte to be displayed
+  0000001D            00084         BYTESTR:10              ; Display string for binary version of BYTE
+  00000027            00085         PWMDISP:11              ;Display string for pwn value
+                      00086         endc
+                      00087 
+                      00088 ;;;;;;; Macro definitions ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+                      00089 
+                      00090 MOVLF   macro   literal,dest
+                      00091         movlw   literal
+                      00092         movwf   dest
+                      00093         endm
+                      00094 ;; POINT taken from Reference: Peatman CH 7 LCD
+                      00095 POINT   macro  stringname               ; Load a string into table pointer
+                      00096         MOVLF  high stringname, TBLPTRH ; Used to put values in program memory
+                      00097         MOVLF  low stringname, TBLPTRL
+                      00098         endm
+                      00099 
+                      00100 DISPLAY macro  register         ; Displays a given register in binary on LCD
+                      00101         movff  register,BYTE
+                      00102         call  ByteDisplay
+                      00103         endm
+                      00104 ;;;;;;; Vectors ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+                      00105 
+                      00106         org  0x0000                    ; Reset vector
+000000 EF?? F???      00107         goto  Mainline
+                      00108 
+                      00109         org  0x0008                    ; High priority interrupt vector
+000008 EF?? F???      00110         goto  HiPriISR                 ; Send to HiPriISR subroutine handler    
+                      00111 
+                      00112         org  0x0018                    ; Low priority interrupt vector
+000018 EF?? F???      00113         goto  LoPriISR                 ; Send to LoPriISR subroutine handler    
+                      00114 
+                      00115 ;;;;;;; Mainline program ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+                      00116 
+00001C                00117 Mainline
+00001C D???           00118         rcall  Initial                 ;Initialize everything
+00001E                00119 L1
+00001E D???           00120         rcall   RPG
+000020 D???           00121         bra     L1
+                      00122 
+                      00123 
+                      00124 ;;;;;;; Initial subroutine ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+                      00125 ;
+                      00126 ; This subroutine performs SOME of the initializations of variables and registers.
+                      00127 ; YOU will need to add those that are omitted/needed for your specific code
+                      00128 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+000022                00129 Initial
+                      00130         MOVLF  0xC0,PWMDISP ;C0         ;Initialize the PWMDISP string to be sent to LCD
+000022 0EC0               M         movlw   0xC0
+000024 6E27               M         movwf   PWMDISP
+                      00131         MOVLF  0x50,PWMDISP+1 ;P
+000026 0E50               M         movlw   0x50
+000028 6E28               M         movwf   PWMDISP+1
+                      00132         MOVLF  0x57,PWMDISP+2 ;W
+00002A 0E57               M         movlw   0x57
+00002C 6E29               M         movwf   PWMDISP+2
+                      00133         MOVLF  0x3D,PWMDISP+3 ;=
+00002E 0E3D               M         movlw   0x3D
+000030 6E2A               M         movwf   PWMDISP+3
+                      00134         MOVLF  0x31,PWMDISP+4 ;1
+000032 0E31               M         movlw   0x31
+000034 6E2B               M         movwf   PWMDISP+4
+                      00135         MOVLF  0x2E,PWMDISP+5 ;.
+000036 0E2E               M         movlw   0x2E
+000038 6E2C               M         movwf   PWMDISP+5
+                      00136         MOVLF  0x30,PWMDISP+6 ;0
+00003A 0E30               M         movlw   0x30
+00003C 6E2D               M         movwf   PWMDISP+6
+                      00137         MOVLF  0x30,PWMDISP+7; 0
+00003E 0E30               M         movlw   0x30
+000040 6E2E               M         movwf   PWMDISP+7
+                      00138         MOVLF  0x6D,PWMDISP+8 ;m
+000042 0E6D               M         movlw   0x6D
+000044 6E2F               M         movwf   PWMDISP+8
+                      00139         MOVLF  0x73,PWMDISP+9 ;s
+000046 0E73               M         movlw   0x73
+000048 6E30               M         movwf   PWMDISP+9
+                      00140         MOVLF  0x00,PWMDISP+10; null
+00004A 0E00               M         movlw   0x00
+00004C 6E31               M         movwf   PWMDISP+10
+                      00141         
+                      00142         MOVLF   B'11000000',TRISB
+00004E 0EC0               M         movlw   B'11000000'
+000050 6E93               M         movwf   TRISB
+                      00143         MOVLF   B'00001000',TRISD; Set TRISD 
+000052 0E08               M         movlw   B'00001000'
+000054 6E95               M         movwf   TRISD
+                      00144         MOVLF   B'00000000',TRISC; Set TRISC 
+000056 0E00               M         movlw   B'00000000'
+000058 6E94               M         movwf   TRISC
+                      00145         MOVLF   B'00000000',LATD; Turn off all LEDS
+00005A 0E00               M         movlw   B'00000000'
+00005C 6E8C               M         movwf   LATD
+                      00146         MOVLF   B'00000000',LATC
+00005E 0E00               M         movlw   B'00000000'
+000060 6E8B               M         movwf   LATC
+                      00147         MOVLF   B'00000000',LATB
+000062 0E00               M         movlw   B'00000000'
+000064 6E8A               M         movwf   LATB
+                      00148         
+                      00149         MOVLF   B'00000000',INTCON
+000066 0E00               M         movlw   B'00000000'
+000068 6EF2               M         movwf   INTCON
+                      00150         MOVLF   B'00001000',T0CON       ; Set up Timer0 for a delay of 10 ms
+00006A 0E08               M         movlw   B'00001000'
+00006C 6ED5               M         movwf   T0CON
+                      00151         MOVLF   high Bignum10ms,TMR0H       ; Writing binary 25536 to TMR0H / TMR0L
+00006E 0E63               M         movlw   high Bignum10ms
+000070 6ED7               M         movwf   TMR0H
+                      00152         MOVLF   low Bignum10ms,TMR0L    ; Write high byte first, then low!
+000072 0EC0               M         movlw   low Bignum10ms
+000074 6ED6               M         movwf   TMR0L
+000076 8ED5           00153         bsf     T0CON,7
+                      00154         
+000078 D???           00155         rcall   InitLCD                 ; Initialize LCD
+00007A D???           00156         rcall   Wait10ms                ; 10 ms delay subroutine
+                      00157         
+                      00158         POINT   LCDcl                   ; Hello
+                          M         MOVLF  high LCDcl,      TBLPTRH ; Used to put values in program memory
+00007C 0E??               M         movlw   high LCDcl
+00007E 6EF7               M         movwf   TBLPTRH
+                          M         MOVLF  low LCDcl,      TBLPTRL
+000080 0E??               M         movlw   low LCDcl
+000082 6EF6               M         movwf   TBLPTRL
+000084 D???           00159         rcall   DisplayC                ; Display character subroutine
+                      00160         
+000086 EE00 F027      00161         LFSR 0,PWMDISP
+00008A D???           00162         rcall DisplayV
+                      00163         
+00008C 6A94           00164         clrf TRISC                      ; Set I/O for PORTC
+00008E 6A8B           00165         clrf LATC                       ; Clear lines on PORTC
+                      00166         
+                      00167         MOVLF   B'00001011',TRISD       ; Set TRISD 
+000090 0E0B               M         movlw   B'00001011'
+000092 6E95               M         movwf   TRISD
+                      00168         MOVLF   B'00000000',LATD        ; Turn off all LEDS
+000094 0E00               M         movlw   B'00000000'
+000096 6E8C               M         movwf   LATD
+                      00169         MOVLF   B'00000000',INTCON
+000098 0E00               M         movlw   B'00000000'
+00009A 6EF2               M         movwf   INTCON
+                      00170         MOVLF   B'10000100',T0CON       ; Set up Timer0 for a delay of 0.5 s
+00009C 0E84               M         movlw   B'10000100'
+00009E 6ED5               M         movwf   T0CON
+                      00171         MOVLF   high Bignum,TMR0H       
+0000A0 0E0B               M         movlw   high Bignum
+0000A2 6ED7               M         movwf   TMR0H
+                      00172         MOVLF   low Bignum,TMR0L
+0000A4 0EDC               M         movlw   low Bignum
+0000A6 6ED6               M         movwf   TMR0L
+                      00173         
+0000A8 D???           00174         RCALL   Wait1s; call subroutine to wait 1 second
+                      00175         MOVLF   B'00100000',LATD; Turn ON RD5
+0000AA 0E20               M         movlw   B'00100000'
+0000AC 6E8C               M         movwf   LATD
+0000AE D???           00176         RCALL   Wait1s; call subroutine to wait 1 second
+                      00177         MOVLF   B'00000000',LATD; Turn OFF RD5
+0000B0 0E00               M         movlw   B'00000000'
+0000B2 6E8C               M         movwf   LATD
+                      00178         MOVLF   B'01000000',LATD; Turn ON RD6
+0000B4 0E40               M         movlw   B'01000000'
+0000B6 6E8C               M         movwf   LATD
+0000B8 D???           00179         RCALL   Wait1s; call subroutine to wait 1 second
+                      00180         MOVLF   B'00000000',LATD; Turn OFF RD6
+0000BA 0E00               M         movlw   B'00000000'
+0000BC 6E8C               M         movwf   LATD
+                      00181         MOVLF   B'10000000',LATD; Turn ON RD7
+0000BE 0E80               M         movlw   B'10000000'
+0000C0 6E8C               M         movwf   LATD
+0000C2 D???           00182         RCALL   Wait1s; call subroutine to wait 1 second
+                      00183         MOVLF   B'00000000',LATD; Turn OFF RD7
+0000C4 0E00               M         movlw   B'00000000'
+0000C6 6E8C               M         movwf   LATD
+                      00184         
+                      00185         ;MOVLF  low PWMLOW,DTIMEL       ; Load DTIME with HalfPeriod constant
+                      00186         ;MOVLF  high PWMLOW,DTIMEH
+                      00187         ;MOVLF  upper PWMLOW,DTIMEX
+                      00188         
+                      00189         ;MOVLF  low PWMLOW,DTLOWPWMLOW  ; Load initial low timing of pwm
+                      00190         ;MOVLF  high PWMLOW,DTLOWPWMHIGH
+                      00191         ;MOVLF  upper PWMLOW,DTLOWPWMX
+                      00192         
+                      00193         ;MOVLF  low PWMHIGH,DTHIGHPWMLOW        ; Load initial high timing of pwm
+                      00194         ;MOVLF  high PWMHIGH,DTHIGHPWMHIGH
+                      00195         
+                      00196         ;MOVLF  low ALIVELOW,DTLOWALIVELOW   ; Load initial low timiing of alive led
+                      00197         ;MOVLF  high ALIVELOW,DTLOWALIVEHIGH
+                      00198         ;MOVLF  upper ALIVELOW,DTLOWALIVEX
+                      00199         
+                      00200         ;MOVLF  low ALIVEHIGH,DTHIGHALIVELOW ; Load initial high timing of alive led
+                      00201         ;MOVLF  high ALIVEHIGH,DTHIGHALIVEHIGH
+                      00202         ;MOVLF  upper ALIVEHIGH,DTHIGHALIVEX
+                      00203         
+                      00204         ;MOVLF  DPWM,DTIMEPWM   ; Load change in pwm for smallest rotation of RPG
+                      00205         
+                      00206         MOVLF   low PWMLOW,PWMLOWL
+0000C8 0EE0               M         movlw   low PWMLOW
+0000CA 6E0B               M         movwf   PWMLOWL
+                      00207         MOVLF   high PWMLOW,PWMLOWH
+0000CC 0E28               M         movlw   high PWMLOW
+0000CE 6E0C               M         movwf   PWMLOWH
+                      00208         MOVLF   upper PWMLOW,PWMLOWX
+0000D0 0E01               M         movlw   upper PWMLOW
+0000D2 6E0D               M         movwf   PWMLOWX
+                      00209         
+                      00210         MOVLF   low PWMHIGH,PWMHIGHL
+0000D4 0EA0               M         movlw   low PWMHIGH
+0000D6 6E0E               M         movwf   PWMHIGHL
+                      00211         MOVLF   high PWMHIGH,PWMHIGHH
+0000D8 0E0F               M         movlw   high PWMHIGH
+0000DA 6E0F               M         movwf   PWMHIGHH
+                      00212         MOVLF   upper PWMHIGH,PWMHIGHX
+0000DC 0E00               M         movlw   upper PWMHIGH
+0000DE 6E10               M         movwf   PWMHIGHX
+                      00213         
+                      00214         MOVLF   low ALIVELOW,ALIVELOWL
+0000E0 0E00               M         movlw   low ALIVELOW
+0000E2 6E11               M         movwf   ALIVELOWL
+                      00215         MOVLF   high ALIVELOW,ALIVELOWH
+0000E4 0ED4               M         movlw   high ALIVELOW
+0000E6 6E12               M         movwf   ALIVELOWH
+                      00216         MOVLF   upper ALIVELOW,ALIVELOWX
+0000E8 0E30               M         movlw   upper ALIVELOW
+0000EA 6E13               M         movwf   ALIVELOWX
+                      00217         
+                      00218         MOVLF   low ALIVEHIGH,ALIVEHIGHL
+0000EC 0E00               M         movlw   low ALIVEHIGH
+0000EE 6E14               M         movwf   ALIVEHIGHL
+                      00219         MOVLF   high ALIVEHIGH,ALIVEHIGHH
+0000F0 0E35               M         movlw   high ALIVEHIGH
+0000F2 6E15               M         movwf   ALIVEHIGHH
+                      00220         MOVLF   upper ALIVEHIGH,ALIVEHIGHX
+0000F4 0E0C               M         movlw   upper ALIVEHIGH
+0000F6 6E16               M         movwf   ALIVEHIGHX
+                      00221         
+                      00222         MOVLF   low DPWM,DPWML
+0000F8 0E28               M         movlw   low DPWM
+0000FA 6E17               M         movwf   DPWML
+                      00223         MOVLF   high DPWM,DPWMH
+0000FC 0E00               M         movlw   high DPWM
+0000FE 6E18               M         movwf   DPWMH
+                      00224         MOVLF   upper DPWM,DPWMX
+000100 0E00               M         movlw   upper DPWM
+000102 6E19               M         movwf   DPWMX
+                      00225         
+                      00226         
+000104 6A94           00227         clrf TRISC                      ; Set I/O for PORTC
+000106 6A8B           00228         clrf LATC                       ; Clear lines on PORTC
+                      00229         MOVLF  B'00000011',T1CON        ; 16 bit timer and Turn on TMR1
+000108 0E03               M         movlw   B'00000011'
+00010A 6ECD               M         movwf   T1CON
+                      00230         MOVLF  B'00001010',CCP1CON      ; Select compare mode
+00010C 0E0A               M         movlw   B'00001010'
+00010E 6EBB               M         movwf   CCP1CON
+                      00231         ;MOVLF  B'00001000',CCP2CON     ; Select compare mode for ccp2
+000110 010F           00232         MOVLB 0X0F                              ; Set BSR to bank F for SFRs outside of access bank                             
+000112 0E00           00233         MOVLW  B'00000000'              ; NOTE: Macro cannot be used, does not handle when a=1
+000114 6F2D           00234         MOVWF CCPTMRS0,1                ; Set TMR1 for use with ECCP1, a=1!!
+000116 0E08           00235         MOVLW  B'00001000'
+000118 6F4E           00236         MOVWF CCP2CON,1
+00011A 8ED0           00237         bsf  RCON,IPEN                  ; Enable priority levels
+00011C 909F           00238         bcf  IPR1,TMR1IP                ; Assign low priority to TMR1 interrupts
+00011E 92A5           00239         bcf  IPR3,CCP1IP                ;  and to ECCP1 interrupts
+000120 94A5           00240         bcf  IPR3,CCP2IP                ; Assign low priority to ECCP2
+000122 6A02           00241         clrf  TMR1X                     ; Clear TMR1X extension
+                      00242         ;MOVLF  upper PWMLOW,CCPR1X     ; Make first 24-bit compare occur quickly 
+                      00243         ;MOVLF  upper ALIVELOW,CCPR2X   ;  16bit+8bit ext Note: 200000 (= 0x30D40)
+000124 C00D F003      00244         MOVFF   PWMLOWX,CCPR1X
+000128 C013 F004      00245         MOVFF   ALIVELOWX,CCPR2X
+00012C 84A3           00246         bsf  PIE3,CCP2IE                ; Enable ECCP1 interrupts
+00012E 82A3           00247         bsf  PIE3,CCP1IE                ; Enable ECCP2 interrupts
+000130 809D           00248         bsf  PIE1,TMR1IE                ; Enable TMR1 interrupts
+000132 94A4           00249         bcf  PIR3,CCP2IF
+000134 8CF2           00250         bsf  INTCON,GIEL                ; Enable low-priority interrupts to CPU
+000136 8EF2           00251         bsf  INTCON,GIEH                ; Enable all interrupts
+                      00252         
+000138 6ACF           00253         clrf TMR1H
+00013A 6ACE           00254         clrf TMR1L
+00013C 6A02           00255         clrf TMR1X
+                      00256         
+                      00257         ;MOVLF low ALIVELOW, CCPR2L
+                      00258         ;MOVLF high ALIVELOW,CCPR2H
+00013E C011 FF4F      00259         MOVFF   ALIVELOWL,CCPR2L
+000142 C012 FF50      00260         MOVFF   ALIVELOWH,CCPR2H
+                      00261         
+                      00262         
+  00000030            00263 pwmcount    equ 0x30
+                      00264         MOVLF   D'0',pwmcount
+000146 0E00               M         movlw   D'0'
+000148 6E30               M         movwf   pwmcount
+                      00265         
+00014A 0012           00266         return
+                      00267 
+                      00268 ;;;;;;; RPG subroutine ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+                      00269 ;
+                      00270 ; Credit: This subroutine modified from Peatman book Chapter 8 - RPG
+                      00271 ; This subroutine deciphers RPG changes into values of DIR_RPG of 0, +1, or -1.
+                      00272 ; DIR_RPG = +1 for CW change, 0 for no change, and -1 for CCW change.
+                      00273 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+                      00274         
+00014C                00275 RPG
+00014C 6A08           00276         clrf   DIR_RPG          ; Clear for "no change" return value.
+00014E 5083           00277         movf   PORTD,W          ; Copy PORTD into W.
+000150 6E09           00278         movwf  RPG_TEMP         ;  and RPG_TEMP.
+000152 180A           00279         xorwf  OLDPORTD,W       ; Check for any change?
+000154 0B03           00280         andlw  B'00000011'      ; Masks just the RPG pins          
+000156 E0??           00281         bz      L8              ; If zero, RPG has not moved, ->return
+                      00282         ; But if the two bits have changed then...
+                      00283         ; Form what a CCW change would produce.                 
+000158 300A           00284         rrcf OLDPORTD,W         ; Rotate right once into carry bit   
+00015A E3??           00285         bnc L9                  ; If no carry, then bit 0 was a 0 -> branch to L9
+00015C 92E8           00286         bcf  WREG,1             ; Otherwise, bit 0 was a 1. Then clear bit 1
+                      00287                                 ; to simulate what a CCW change would produce
+00015E D???           00288         bra L10                 ; Branch to compare if RPG actually matches new CCW pattern in WREG
+000160                00289 L9
+000160 82E8           00290         bsf  WREG,1             ; Set bit 1 since there was no carry
+                      00291                                 ; again to simulate what CCW would produce
+000162                00292 L10                             ; Test direction of RPG
+000162 1809           00293         xorwf  RPG_TEMP,W       ; Did the RPG actually change to this output?
+000164 0B03           00294         andlw  B'00000011'      ; Masks the RPG pins  
+000166 E1??           00295         bnz L11                 ; If not zero, then branch to L11 for CW case
+000168 0608           00296         decf DIR_RPG,F          ; If zero then change DIR_RPG to -1, must be CCW. 
+                      00297         ;movf PWMDISP+4
+                      00298         ;sublw 0x32
+                      00299         ;bz dechigh
+00016A 522E           00300         movf PWMDISP+7
+00016C 0830           00301         sublw 0x30
+00016E E0??           00302         bz dectp
+000170 502E           00303         movf PWMDISP+7,W
+000172 0830           00304         sublw 0x30
+000174 E0??           00305         bz dectp
+000176 062E           00306         decf PWMDISP+7,F
+000178 500B           00307         movf PWMLOWL,0
+00017A 2417           00308         addwf DPWML,0
+00017C 6E0B           00309         movwf PWMLOWL,0
+00017E 500C           00310         movf PWMLOWH,0
+000180 2018           00311         addwfC DPWMH,0
+000182 6E0C           00312         movwf PWMLOWH,0
+000184 500D           00313         movf PWMLOWX,0
+000186 2019           00314         addwfC DPWMX,0
+000188 6E0D           00315         movwf PWMLOWX,0
+                      00316         
+00018A 5017           00317         movf DPWML,0
+00018C 5C0E           00318         subwf PWMHIGHL,0
+00018E 6E0E           00319         movwf PWMHIGHL,0
+000190 5018           00320         movf DPWMH,0
+000192 580F           00321         subwfb PWMHIGHH,0
+000194 6E0F           00322         movwf PWMHIGHH,0
+000196 5019           00323         movf DPWMX,0
+000198 580E           00324         subwfb PWMHIGHL,0
+00019A 6E0E           00325         movwf PWMHIGHL,0
+00019C EE00 F027      00326         LFSR    0,PWMDISP
+0001A0 D???           00327         rcall   DisplayV
+0001A2 D???           00328         bra     L8              ; Done so branch to return
+0001A4                00329 L11                             ; CW case 
+0001A4 2A08           00330         incf DIR_RPG,F          ; Change DIR_RPG to +1 for CW.
+0001A6 502B           00331         movf PWMDISP+4,W
+0001A8 0832           00332         sublw 0x32
+0001AA E0??           00333         bz      L8
+0001AC 502E           00334         movf PWMDISP+7,W
+0001AE 0839           00335         sublw 0x39
+0001B0 E0??           00336         bz inctp
+                      00337         ;movlw D'9'
+                      00338         ;cpfslt pwmcount
+                      00339         ;bra    inctp
+0001B2 2A2E           00340         incf PWMDISP+7,F
+0001B4 500E           00341         movf PWMHIGHL,0
+0001B6 2417           00342         addwf DPWML,0
+0001B8 6E0E           00343         movwf PWMHIGHL,0
+0001BA 500F           00344         movf PWMHIGHH,0
+0001BC 2018           00345         addwfC DPWMH,0
+0001BE 6E0F           00346         movwf PWMHIGHH,0
+0001C0 5010           00347         movf PWMHIGHX,0
+0001C2 2019           00348         addwfC DPWMX,0
+0001C4 6E10           00349         movwf PWMHIGHX,0
+                      00350         
+0001C6 5017           00351         movf DPWML,0
+0001C8 5C0B           00352         subwf PWMLOWL,0
+0001CA 6E0B           00353         movwf PWMLOWL,0
+0001CC 5018           00354         movf DPWMH,0
+0001CE 580C           00355         subwfb PWMLOWH,0
+0001D0 6E0C           00356         movwf PWMLOWH,0
+0001D2 5019           00357         movf DPWMX,0
+0001D4 580B           00358         subwfb PWMLOWL,0
+0001D6 6E0B           00359         movwf PWMLOWL,0
+                      00360         
+                      00361         ;incf pwmcount,F
+0001D8 EE00 F027      00362         LFSR    0,PWMDISP
+0001DC D???           00363         rcall   DisplayV
+0001DE                00364 L8
+0001DE C009 F00A      00365         movff  RPG_TEMP,OLDPORTD        ; Save RPG state as OLDPORTD
+0001E2 0012           00366         return
+0001E4                00367 inctp
+0001E4 502D           00368         movf PWMDISP+6,W
+0001E6 0839           00369         sublw 0x39
+0001E8 E0??           00370         bz highcap
+                      00371         MOVLF 0x30,PWMDISP+7
+0001EA 0E30               M         movlw   0x30
+0001EC 6E2E               M         movwf   PWMDISP+7
+0001EE 2A2D           00372         incf PWMDISP+6,F
+0001F0 500E           00373         movf PWMHIGHL,0
+0001F2 2417           00374         addwf DPWML,0
+0001F4 6E0E           00375         movwf PWMHIGHL,0
+0001F6 500F           00376         movf PWMHIGHH,0
+0001F8 2018           00377         addwfC DPWMH,0
+0001FA 6E0F           00378         movwf PWMHIGHH,0
+0001FC 5010           00379         movf PWMHIGHX,0
+0001FE 2019           00380         addwfC DPWMX,0
+000200 6E10           00381         movwf PWMHIGHX,0
+                      00382         
+000202 5017           00383         movf DPWML,0
+000204 5C0B           00384         subwf PWMLOWL,0
+000206 6E0B           00385         movwf PWMLOWL,0
+000208 5018           00386         movf DPWMH,0
+00020A 580C           00387         subwfb PWMLOWH,0
+00020C 6E0C           00388         movwf PWMLOWH,0
+00020E 5019           00389         movf DPWMX,0
+000210 580B           00390         subwfb PWMLOWL,0
+000212 6E0B           00391         movwf PWMLOWL,0
+                      00392         ;clrf pwmcount
+000214 EE00 F027      00393         LFSR    0,PWMDISP
+000218 D???           00394         rcall   DisplayV
+00021A D???           00395         bra     L8
+00021C                00396 dectp
+00021C 502D           00397         movf PWMDISP+6,W
+00021E 0830           00398         sublw 0x30
+000220 E0??           00399         bz highorlow
+                      00400         MOVLF 0x39,PWMDISP+7
+000222 0E39               M         movlw   0x39
+000224 6E2E               M         movwf   PWMDISP+7
+000226 062D           00401         decf PWMDISP+6
+000228 500B           00402         movf PWMLOWL,0
+00022A 2417           00403         addwf DPWML,0
+00022C 6E0B           00404         movwf PWMLOWL,0
+00022E 500C           00405         movf PWMLOWH,0
+000230 2018           00406         addwfC DPWMH,0
+000232 6E0C           00407         movwf PWMLOWH,0
+000234 500D           00408         movf PWMLOWX,0
+000236 2019           00409         addwfC DPWMX,0
+000238 6E0D           00410         movwf PWMLOWX,0
+                      00411         
+00023A 5017           00412         movf DPWML,0
+00023C 5C0E           00413         subwf PWMHIGHL,0
+00023E 6E0E           00414         movwf PWMHIGHL,0
+000240 5018           00415         movf DPWMH,0
+000242 580F           00416         subwfb PWMHIGHH,0
+000244 6E0F           00417         movwf PWMHIGHH,0
+000246 5019           00418         movf DPWMX,0
+000248 580E           00419         subwfb PWMHIGHL,0
+00024A 6E0E           00420         movwf PWMHIGHL,0
+                      00421         ;clrf pwmcount
+00024C EE00 F027      00422         LFSR    0,PWMDISP
+000250 D???           00423         rcall   DisplayV
+000252 D???           00424         bra     L8
+000254                00425 highcap
+                      00426         MOVLF 0x32,PWMDISP+4
+000254 0E32               M         movlw   0x32
+000256 6E2B               M         movwf   PWMDISP+4
+                      00427         MOVLF 0x30,PWMDISP+6
+000258 0E30               M         movlw   0x30
+00025A 6E2D               M         movwf   PWMDISP+6
+                      00428         MOVLF 0x30,PWMDISP+7
+00025C 0E30               M         movlw   0x30
+00025E 6E2E               M         movwf   PWMDISP+7
+                      00429         
+000260 EE00 F027      00430         LFSR    0,PWMDISP
+000264 D???           00431         rcall   DisplayV
+000266 D???           00432         bra     L8
+000268                00433 dechigh
+                      00434         MOVLF 0x31,PWMDISP+4
+000268 0E31               M         movlw   0x31
+00026A 6E2B               M         movwf   PWMDISP+4
+                      00435         MOVLF 0x39,PWMDISP+6
+00026C 0E39               M         movlw   0x39
+00026E 6E2D               M         movwf   PWMDISP+6
+                      00436         MOVLF 0x39,PWMDISP+7
+000270 0E39               M         movlw   0x39
+000272 6E2E               M         movwf   PWMDISP+7
+000274 EE00 F027      00437         LFSR    0,PWMDISP
+000278 D???           00438         rcall   DisplayV
+00027A D???           00439         bra     L8
+00027C                00440 highorlow
+00027C 502B           00441         movf PWMDISP+4,W
+00027E 0831           00442         sublw 0x31
+000280 E0??           00443         bz      L8
+                      00444         MOVLF 0x31,PWMDISP+4
+000282 0E31               M         movlw   0x31
+000284 6E2B               M         movwf   PWMDISP+4
+                      00445         MOVLF 0x39,PWMDISP+6
+000286 0E39               M         movlw   0x39
+000288 6E2D               M         movwf   PWMDISP+6
+                      00446         MOVLF 0x39,PWMDISP+7
+00028A 0E39               M         movlw   0x39
+00028C 6E2E               M         movwf   PWMDISP+7
+00028E EE00 F027      00447         LFSR    0,PWMDISP
+000292 D???           00448         rcall   DisplayV
+000294 D???           00449         bra     L8
+                      00450         
+                      00451         
+                      00452 ;;;;;;; HiPriISR interrupt service routine ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+                      00453 
+000296                00454 HiPriISR                        ; High-priority interrupt service routine
+000296                00455 Q2
+000296 A4A4           00456         btfss PIR3,CCP2IF
+000298 D???           00457         bra     Q3
+00029A D???           00458             rcall  CCP2handler          ; Call CCP1handler for generating RC2 output
+00029C D???           00459         bra     Q2
+00029E                00460 Q3
+00029E A09E           00461         btfss PIR1,TMR1IF
+0002A0 D???           00462         bra     Q4
+0002A2 D???           00463             rcall TMR1handler           ; Call TMR1handler for timing with CCP1
+0002A4 D???           00464         bra     Q2                      ;       <execute the handler for interrupt source>
+0002A6                00465 Q4                              ;       <clear that source's interrupt flag>
+0002A6 0011           00466         retfie  FAST            ; Return and restore STATUS, WREG, and BSR
+                      00467                                 ; from shadow registers
+0002A8                00468 CCP2handler                     ; First must test if TMR1IF occurred at the same time
+0002A8 A09E           00469         btfss PIR1,TMR1IF       ; If TMR1's overflow flag is set? skip to test CCP bit7
+0002AA D???           00470         bra     Q5              ; If TMR1F was clear, branch to check extension bytes
+0002AC BF50           00471         btfsc CCPR2H,7          ; Is bit 7 a 0? Then TMR1/CCP just rolled over, need to inc TMR1X
+0002AE D???           00472         bra     Q5              ; Is bit 7 a 1? Then TMR1/CCP is full, TMR1handler already inc TMR1X 
+0002B0 2A02           00473         incf  TMR1X,F           ; TMR1/CCP just rolled over, must increment TMR1 extension
+0002B2 909E           00474         bcf  PIR1,TMR1IF        ; and clear flag (Since TMR1 handler was unable to-arrived here first)
+0002B4                00475 Q5
+0002B4 5002           00476         movf  TMR1X,W           ; Check whether extensions are equal
+0002B6 5C04           00477         subwf  CCPR2X,W
+0002B8 E1??           00478         bnz     Q7              ; If not, branch to return
+0002BA A883           00479         btfss PORTD,4           ; If set (end of high part of pwm), add low pwm time dt to ccp
+0002BC D???           00480         bra     alivelowtohigh  ; Otherwise going from low part of pwm to high part
+                      00481         ;MOVLF  low ALIVELOW,DTIMEL
+                      00482         ;MOVLF  high ALIVELOW,DTIMEH
+                      00483         ;MOVLF  upper ALIVELOW,DTIMEX
+0002BE C011 F007      00484         MOVFF   ALIVELOWL,DTIMEL
+0002C2 C012 F006      00485         MOVFF   ALIVELOWH,DTIMEH
+0002C6 C013 F005      00486         MOVFF   ALIVELOWX,DTIMEX
+0002CA D???           00487         bra     Z1
+0002CC                00488 alivelowtohigh
+                      00489         ;MOVLF  low ALIVEHIGH,DTIMEL
+                      00490         ;MOVLF  high ALIVEHIGH,DTIMEH
+                      00491         ;MOVLF  upper ALIVEHIGH,DTIMEX 
+0002CC C014 F007      00492         MOVFF   ALIVEHIGHL,DTIMEL
+0002D0 C015 F006      00493         MOVFF   ALIVEHIGHH,DTIMEH
+0002D4 C016 F005      00494         MOVFF   ALIVEHIGHX,DTIMEX
+0002D8                00495 Z1      
+0002D8 788C           00496         btg  LATD,4             ; If zero, they are equal, and toggle control bit H/L
+0002DA 5007           00497         movf  DTIMEL,W          ; and add half period to CCPR1 to add more pulse time
+0002DC 274F           00498         addwf  CCPR2L,F,1
+0002DE 5006           00499         movf  DTIMEH,W
+0002E0 2350           00500         addwfc  CCPR2H,F,1
+0002E2 5005           00501         movf  DTIMEX,W
+0002E4 2204           00502         addwfc  CCPR2X,F
+0002E6                00503 Q7
+0002E6 94A4           00504         bcf  PIR3,CCP2IF        ; Clear flag
+0002E8 0012           00505         return
+                      00506 ;;;;;;; LoPriISR interrupt service routine ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+                      00507 
+0002EA                00508 LoPriISR                                ; Low-priority interrupt service routine
+0002EA CFD8 F001      00509         movff  STATUS,STATUS_TEMP       ; Set aside STATUS and WREG
+0002EE 6E00           00510         movwf  WREG_TEMP
+                      00511 
+0002F0                00512 L2
+0002F0 A2A4           00513         btfss PIR3,CCP1IF
+0002F2 D???           00514         bra     L3
+0002F4 D???           00515             rcall  CCP1handler          ; Call CCP1handler for generating RC2 output
+0002F6 D???           00516         bra     L2
+0002F8                00517 L3
+0002F8 A09E           00518         btfss PIR1,TMR1IF
+0002FA D???           00519         bra     L6
+0002FC D???           00520             rcall TMR1handler           ; Call TMR1handler for timing with CCP1
+0002FE D???           00521         bra     L2
+000300                00522 L6
+000300 A4A4           00523         btfss  PIR3,CCP2IF
+000302 D???           00524         bra     L4
+000304 D???           00525             rcall CCP2handler
+000306 D???           00526         bra     L2
+000308                00527 L4
+000308 5000           00528         movf  WREG_TEMP,W               ; Restore WREG and STATUS
+00030A C001 FFD8      00529         movff  STATUS_TEMP,STATUS
+00030E 0010           00530         retfie                          ; Return from interrupt, reenabling GIEL
+                      00531 
+000310                00532 CCP1handler                     ; First must test if TMR1IF occurred at the same time
+000310 A09E           00533         btfss PIR1,TMR1IF       ; If TMR1's overflow flag is set? skip to test CCP bit7
+000312 D???           00534         bra     L5              ; If TMR1F was clear, branch to check extension bytes
+000314 BEBD           00535         btfsc CCPR1H,7          ; Is bit 7 a 0? Then TMR1/CCP just rolled over, need to inc TMR1X
+000316 D???           00536         bra     L5              ; Is bit 7 a 1? Then TMR1/CCP is full, TMR1handler already inc TMR1X 
+000318 2A02           00537         incf  TMR1X,F           ; TMR1/CCP just rolled over, must increment TMR1 extension
+00031A 909E           00538         bcf  PIR1,TMR1IF        ; and clear flag (Since TMR1 handler was unable to-arrived here first)
+00031C                00539 L5
+00031C 5002           00540         movf  TMR1X,W           ; Check whether extensions are equal
+00031E 5C03           00541         subwf  CCPR1X,W
+000320 E1??           00542         bnz     L7              ; If not, branch to return
+000322 A482           00543         btfss PORTC,2           ; If set (end of high part of pwm), add low pwm time dt to ccp
+000324 D???           00544         bra     lowtohigh       ; Otherwise going from low part of pwm to high part
+                      00545         ;MOVLF  low PWMLOW,DTIMEL
+                      00546         ;MOVLF  high PWMLOW,DTIMEH
+                      00547         ;MOVLF  upper PWMLOW,DTIMEX
+000326 C00B F007      00548         MOVFF   PWMLOWL,DTIMEL
+00032A C00C F006      00549         MOVFF   PWMLOWH,DTIMEH
+00032E C00D F005      00550         MOVFF   PWMLOWX,DTIMEX
+000332 D???           00551         bra     c1
+000334                00552 lowtohigh
+                      00553         ;MOVLF  low PWMHIGH,DTIMEL
+                      00554         ;MOVLF  high PWMHIGH,DTIMEH
+                      00555         ;MOVLF  upper PWMHIGH,DTIMEX 
+000334 C00E F007      00556         MOVFF   PWMHIGHL,DTIMEL
+000338 C00F F006      00557         MOVFF   PWMHIGHH,DTIMEH
+00033C C010 F005      00558         MOVFF   PWMHIGHX,DTIMEX
+000340                00559 c1      
+                      00560         ;btg  CCP1CON,0         ; If zero, they are equal, and toggle control bit H/L
+000340 748B           00561         btg   LATC,2
+000342 5007           00562         movf  DTIMEL,W          ; and add half period to CCPR1 to add more pulse time
+000344 26BC           00563         addwf  CCPR1L,F
+000346 5006           00564         movf  DTIMEH,W
+000348 22BD           00565         addwfc  CCPR1H,F
+00034A 5005           00566         movf  DTIMEX,W
+00034C 2203           00567         addwfc  CCPR1X,F
+00034E                00568 L7
+00034E 92A4           00569         bcf  PIR3,CCP1IF        ; Clear flag
+000350 0012           00570         return
+                      00571 ;lowtohigh
+                      00572         ;MOVLF  low PWMHIGH,DTIMEL
+                      00573         ;MOVLF  high PWMHIGH,DTIMEH
+                      00574         ;MOVLF  upper PWMHIGH,DTIMEX  
+                      00575         ;return
+                      00576 ;hightolow
+                      00577         ;MOVLF  low PWMLOW,DTIMEL
+                      00578         ;MOVLF  high PWMLOW,DTIMEH
+                      00579         ;MOVLF  upper PWMLOW,DTIMEX
+                      00580         ;return
+                      00581 
+000352                00582 TMR1handler
+000352 2A02           00583         incf  TMR1X,F           ;Increment Timer1 extension
+000354 909E           00584         bcf  PIR1,TMR1IF        ;Clear flag and return to service routine
+000356 0012           00585         return
+                      00586         
+000358                00587 Wait1s
+000358 A4F2           00588         btfss   INTCON,TMR0IF           ; Read Timer0 rollover flag and ...
+00035A D???           00589         bra     Wait1s                  ; Loop if timer has not rolled over
+                      00590         MOVLF   high Bignum,TMR0H       ; Then write the timer values into
+00035C 0E0B               M         movlw   high Bignum
+00035E 6ED7               M         movwf   TMR0H
+                      00591         MOVLF   low Bignum,TMR0L        ; the timer high and low registers
+000360 0EDC               M         movlw   low Bignum
+000362 6ED6               M         movwf   TMR0L
+000364 94F2           00592         bcf     INTCON,TMR0IF           ; Clear Timer0 rollover flag
+000366 0012           00593         return
+                      00594         
+                      00595 ;;;;;;; InitLCD subroutine ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; ;THIS SUBROUTINE WAS BORROWED FROM THE LAB 4 EXAMPLE
+                             CODE
+                      00596 ;
+                      00597 ; InitLCD - modified version of subroutine in Reference: Peatman CH7 LCD
+                      00598 ; Initialize the LCD.
+                      00599 ; First wait for 0.1 second, to get past display's power-on reset time.
+                      00600 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+                      00601         
+000368                00602 InitLCD
+                      00603         MOVLF  10,COUNT     ; Wait 0.1 second for LCD to power up
+000368 0E0A               M         movlw   10
+00036A 6E1A               M         movwf   COUNT
+00036C                00604 Loop3
+00036C D???           00605         rcall  Wait10ms     ; Call wait10ms 10 times to 0.1 second
+00036E 061A           00606         decf  COUNT,F
+000370 E1??           00607         bnz     Loop3
+000372 988A           00608         bcf     LATB,4      ; RS=0 for command mode to LCD
+                      00609         POINT   LCDstr      ; Set up table pointer to initialization string
+                          M         MOVLF  high LCDstr,     TBLPTRH ; Used to put values in program memory
+000374 0E??               M         movlw   high LCDstr
+000376 6EF7               M         movwf   TBLPTRH
+                          M         MOVLF  low LCDstr,     TBLPTRL
+000378 0E??               M         movlw   low LCDstr
+00037A 6EF6               M         movwf   TBLPTRL
+00037C 0008           00610         tblrd*              ; Get first byte from string into TABLAT
+00037E                00611 Loop4
+00037E 6A8A           00612         clrf LATB           ; First set LATB to all zero        
+000380 8A8A           00613         bsf   LATB,5        ; Drive E high - enable LCD
+000382 50F5           00614         movf TABLAT,W       ; Move byte from program memory into working register
+000384 0BF0           00615         andlw 0xF0          ; Mask to get only upper nibble
+000386 38E8           00616         swapf WREG,W        ; Swap so that upper nibble is in right position to move to LATB (RB0:RB3)
+000388 1081           00617         iorwf PORTB,W       ; Mask with the rest of PORTB to retain existing RB7:RB4 states
+00038A 6E8A           00618         movwf LATB          ; Update LATB to send upper nibble
+00038C 9A8A           00619         bcf   LATB,5        ; Drive E low so LCD will process input
+00038E D???           00620         rcall Wait10ms      ; Wait ten milliseconds
+                      00621         
+000390 6A8A           00622         clrf LATB           ; Reset LATB to all zero        
+000392 8A8A           00623         bsf  LATB,5         ; Drive E high
+000394 50F5           00624         movf TABLAT,W,0     ; Move byte from program memory into working register
+000396 0B0F           00625         andlw 0x0F          ; Mask to get only lower nibble
+000398 1081           00626         iorwf PORTB,W,0     ; Mask lower nibble with the rest of PORTB
+00039A 6E8A           00627         movwf LATB,0        ; Update LATB to send lower nibble
+00039C 9A8A           00628         bcf   LATB,5        ; Drive E low so LCD will process input
+00039E D???           00629         rcall Wait10ms      ; Wait ten milliseconds
+0003A0 000B           00630         tblrd+*             ; Increment pointer and get next byte
+0003A2 52F5           00631         movf  TABLAT,F      ; Check if we are done, is it zero?
+0003A4 E1??           00632         bnz     Loop4
+0003A6 0012           00633         return
+                      00634         
+                      00635 ;;;;;;; T50 subroutine ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;THIS SUBROUTINE WAS BORROWED FROM THE LAB 4 EXAMPLE 
+                            CODE
+                      00636 ;
+                      00637 ; T50 modified version of T40 taken from Reference: Peatman CH 7 LCD
+                      00638 ; Pause for 50 microseconds or 50/0.25 = 200 instruction cycles.
+                      00639 ; Assumes 16/4 = 4 MHz internal instruction rate (250 ns)
+                      00640 ; rcall(2) + movlw(1) + movwf(1) + COUNT*3 - lastBNZ(1) + return(2) = 200 
+                      00641 ; Then COUNT = 195/3
+                      00642 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+                      00643         
+0003A8                00644 T50
+0003A8 0E41           00645         movlw  195/3          ;Each loop L4 takes 3 ins cycles
+0003AA 6E1A           00646         movwf  COUNT                
+0003AC                00647 A4
+0003AC 061A           00648         decf  COUNT,F
+0003AE E1??           00649         bnz     A4
+0003B0 0012           00650         return
+                      00651 ;;;;;;;;DisplayC subroutine;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; THIS SUBROUTINE WAS BORROWED FROM THE LAB 4 EXAMPLE 
+                            CODE
+                      00652 ; 
+                      00653 ; DisplayC taken from Reference: Peatman CH7 LCD
+                      00654 ; This subroutine is called with TBLPTR containing the address of a constant
+                      00655 ; display string.  It sends the bytes of the string to the LCD.  The first
+                      00656 ; byte sets the cursor position.  The remaining bytes are displayed, beginning
+                      00657 ; at that position hex to ASCII.
+                      00658 ; This subroutine expects a normal one-byte cursor-positioning code, 0xhh, and
+                      00659 ; a null byte at the end of the string 0x00
+                      00660 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+                      00661 
+0003B2                00662 DisplayC
+0003B2 988A           00663         bcf   LATB,4            ;Drive RS pin low for cursor positioning code
+0003B4 0008           00664         tblrd*                  ;Get byte from string into TABLAT
+0003B6 52F5           00665         movf  TABLAT,F          ;Check for leading zero byte
+0003B8 E1??           00666         bnz     Loop5
+0003BA 000B           00667         tblrd+*                 ;If zero, get next byte
+0003BC                00668 Loop5
+0003BC 0EF0           00669         movlw 0xF0
+0003BE 168A           00670         andwf LATB,F            ;Clear RB0:RB3, which are used to send LCD data
+0003C0 8A8A           00671         bsf   LATB,5            ;Drive E pin high
+0003C2 50F5           00672         movf TABLAT,W           ;Move byte from table latch to working register
+0003C4 0BF0           00673         andlw 0xF0              ;Mask to get only upper nibble
+0003C6 38E8           00674         swapf WREG,W            ;swap so that upper nibble is in right position to move to LATB (RB0:RB3)
+0003C8 1081           00675         iorwf PORTB,W           ;Mask to include the rest of PORTB
+0003CA 6E8A           00676         movwf LATB              ;Send upper nibble out to LATB
+0003CC 9A8A           00677         bcf   LATB,5            ;Drive E pin low so LCD will accept nibble
+                      00678         
+0003CE 0EF0           00679         movlw 0xF0
+0003D0 168A           00680         andwf LATB,F            ;Clear RB0:RB3, which are used to send LCD data
+0003D2 8A8A           00681         bsf   LATB,5            ;Drive E pin high again
+0003D4 50F5           00682         movf TABLAT,W           ;Move byte from table latch to working register
+0003D6 0B0F           00683         andlw 0x0F              ;Mask to get only lower nibble
+0003D8 1081           00684         iorwf PORTB,W           ;Mask to include the rest of PORTB
+0003DA 6E8A           00685         movwf LATB              ;Send lower nibble out to LATB
+0003DC 9A8A           00686         bcf   LATB,5            ;Drive E pin low so LCD will accept nibble
+0003DE D???           00687         rcall T50               ;Wait 50 usec so LCD can process
+                      00688         
+0003E0 888A           00689         bsf   LATB,4            ;Drive RS pin high for displayable characters
+0003E2 000B           00690         tblrd+*                 ;Increment pointer, then get next byte
+0003E4 52F5           00691         movf  TABLAT,F          ;Is it zero?
+0003E6 E1??           00692         bnz     Loop5
+0003E8 0012           00693         return
+                      00694         
+                      00695 ;;;;;;; DisplayV subroutine ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; THIS SUBROUTINE WAS BORROWED FROM THE LAB 4 EXAMPLE 
+                            CODE
+                      00696 ;
+                      00697 ; DisplayV taken from Reference: Peatman CH7 LCD
+                      00698 ; This subroutine is called with FSR0 containing the address of a variable
+                      00699 ; display string.  It sends the bytes of the string to the LCD.  The first
+                      00700 ; byte sets the cursor position.  The remaining bytes are displayed, beginning
+                      00701 ; at that position.
+                      00702 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;  
+                      00703 
+0003EA                00704 DisplayV
+0003EA 988A           00705         bcf     LATB,4          ;Drive RS pin low for cursor positioning code
+0003EC                00706 Loop6
+0003EC 0EF0           00707         movlw 0xF0
+0003EE 168A           00708         andwf LATB,F            ;Clear RB0:RB3, which are used to send LCD data
+0003F0 8A8A           00709         bsf   LATB,5            ;Drive E pin high
+0003F2 50EF           00710         movf INDF0,W            ;Move byte from table latch to working register
+0003F4 0BF0           00711         andlw 0xF0              ;Mask to get only upper nibble
+0003F6 38E8           00712         swapf WREG,W            ;swap so that upper nibble is in right position to move to LATB (RB0:RB3)
+0003F8 1081           00713         iorwf PORTB,W           ;Mask to include the rest of PORTB
+0003FA 6E8A           00714         movwf LATB              ;Send upper nibble out to LATB
+0003FC 9A8A           00715         bcf   LATB,5            ;Drive E pin low so LCD will accept nibble
+                      00716         
+0003FE 0EF0           00717         movlw 0xF0
+000400 168A           00718         andwf LATB,F            ;Clear RB0:RB3, which are used to send LCD data
+000402 8A8A           00719         bsf   LATB,5            ;Drive E pin high again
+000404 50EF           00720         movf INDF0,W            ;Move byte from table latch to working register
+000406 0B0F           00721         andlw 0x0F              ;Mask to get only lower nibble
+000408 1081           00722         iorwf PORTB,W           ;Mask to include the rest of PORTB
+00040A 6E8A           00723         movwf LATB              ;Send lower nibble out to LATB
+00040C 9A8A           00724         bcf   LATB,5            ;Drive E pin low so LCD will accept nibble
+00040E D???           00725         rcall T50               ;Wait 50 usec so LCD can process
+                      00726           
+000410 888A           00727         bsf   LATB,4            ;Drive RS pin high for displayable characters
+000412 50EC           00728         movf  PREINC0,W         ;Increment pointer, then get next byte
+000414 E1??           00729         bnz     Loop6
+000416 0012           00730         return  
+                      00731         
+  000063C0            00732 Bignum10ms  equ 65536-40000
+000418                00733 Wait10ms
+000418 A4F2           00734         btfss   INTCON,TMR0IF           ; Read Timer0 rollover flag and ...
+00041A D???           00735         bra     Wait10ms                ; Loop if timer has not rolled over
+                      00736         MOVLF   high Bignum10ms,TMR0H       ; Then write the timer values into
+00041C 0E63               M         movlw   high Bignum10ms
+00041E 6ED7               M         movwf   TMR0H
+                      00737         MOVLF   low Bignum10ms,TMR0L        ; the timer high and low registers
+000420 0EC0               M         movlw   low Bignum10ms
+000422 6ED6               M         movwf   TMR0L
+000424 94F2           00738         bcf     INTCON,TMR0IF           ; Clear Timer0 rollover flag
+000426 0012           00739         return
+                      00740 ;;;;;;; Constant strings ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+000428 3233 0128 060C 00741 LCDstr  db  0x33,0x32,0x28,0x01,0x0c,0x06,0x00  ;Initialization string for LCD
+       0000 
+000430 4280 5459 3D45 00742 BYTE_1  db  "\x80BYTE=   \x00"         ;Write "BYTE=" to first line of LCD
+       2020 0020 
+00043A 4180 4553 204E 00743 LCDcl   db  "\x80ASEN 5067   \x00"
+       3035 3736 2020 
+       0020 
+000448 4880 6C65 6F6C 00744 LCDs    db  "\x80Hello\x00"
+       0000 
+000450 57C0 726F 646C 00745 LCDs2   db  "\xC0World!\x00"
+       0021 
+                      00746 ;;;;;;; End of Program ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+                      00747         end
+
+Errors   :     0
+Warnings :     0 reported,     0 suppressed
+Messages :     0 reported,     3 suppressed
+
+

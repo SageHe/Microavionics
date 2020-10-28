@@ -1,0 +1,231 @@
+MPASM 5.84                     LAB5_ORIG.ASM   10-27-2020  12:40:29         PAGE  1
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+                      00001 ;;;;;;; ASEN 4-5067 Lab 5 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+                      00002 ;
+                      00003 ; Generate a jitterfree 10 Hz square wave on CCP1 output using compare mode
+                      00004 ; with 24bit extension bytes.
+                      00005 ; Use 16 MHz crystal and 4 MHz internal clock rate.
+                      00006 ;
+                      00007 ;;;;;;; Program hierarchy ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+                      00008 ;
+                      00009 ;Mainline
+                      00010 ;  Initial
+                      00011 ;
+                      00012 ;HiPriISR 
+                      00013 ;  (Consider using for other timing events)
+                      00014 ;LoPriISR
+                      00015 ;  CCP1handler
+                      00016 ;  TMR1handler
+                      00017 ;
+                      00018 ;;;;;;; Assembler directives ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+                      00019 
+                      00020         LIST  P=PIC18F87K22, F=INHX32, C=160, N=0, ST=OFF, MM=OFF, R=DEC, X=ON
+                      00021         #include P18F87K22.inc
+                      00001         LIST
+                      00002 
+                      00003 ;==========================================================================
+                      00004 ; Build date : Mar 17 2019
+                      00005 ;  MPASM PIC18F87K22 processor include
+                      00006 ; 
+                      00007 ;  (c) Copyright 1999-2019 Microchip Technology, All rights reserved
+                      00008 ;==========================================================================
+                      00009 
+                      02986         LIST
+                      00022 
+                      00023 ;               MPLAB configuration directives
+                      00024 
+                      00025                 CONFIG  FOSC = HS1, XINST = OFF
+                      00026                 CONFIG  PWRTEN = ON, BOREN = ON, BORV = 1
+                      00027                 CONFIG  WDTEN = OFF
+                      00028                 CONFIG  CCP2MX = PORTC  
+                      00029 
+                      00030         errorlevel -311         ; Turn off message when 3-byte variable is loaded (24bit)
+                      00031 
+  00030D40            00032 HalfPeriod  equ  200000         ; Number of 250 ns instruction cycles in 0.05 sec (Half of 10 Hz)
+                      00033 
+                      00034 ;;;;;;; Variables ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+                      00035 
+                      00036         cblock  0x000
+  00000000            00037         WREG_TEMP               ; Temp variables used in Low Pri ISR
+  00000001            00038         STATUS_TEMP
+  00000002            00039         TMR1X                   ; Eight-bit extension to TMR1
+  00000003            00040         CCPR1X                  ; Eight-bit extension to CCPR1
+  00000004            00041         DTIMEX                  ; Delta time variable of half period of square wave
+  00000005            00042         DTIMEH                  ; Will copy HalfPeriod constant into these registers
+  00000006            00043         DTIMEL
+  00000007            00044         DIR_RPG                 ; Direction of RPG
+  00000008            00045         RPG_TEMP                ; Temp variable used for RPG state
+                      00046         
+  00000009            00047         OLDPORTD                ; Used to hold previous state of RPG
+                      00048         endc
+                      00049 
+                      00050 ;;;;;;; Macro definitions ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+                      00051 
+                      00052 MOVLF   macro   literal,dest
+                      00053         movlw   literal
+                      00054         movwf   dest
+                      00055         endm
+                      00056 
+                      00057 ;;;;;;; Vectors ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+                      00058 
+                      00059         org  0x0000                    ; Reset vector
+000000 EF?? F???      00060         goto  Mainline
+                      00061 
+                      00062         org  0x0008                    ; High priority interrupt vector
+000008 EF?? F???      00063         goto  HiPriISR                 ; Send to HiPriISR subroutine handler    
+                      00064 
+                      00065         org  0x0018                    ; Low priority interrupt vector
+000018 EF?? F???      00066         goto  LoPriISR                 ; Send to LoPriISR subroutine handler    
+                      00067 
+                      00068 ;;;;;;; Mainline program ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+                      00069 
+00001C                00070 Mainline
+00001C D???           00071         rcall  Initial                 ;Initialize everything
+00001E                00072 L1
+00001E D???           00073         bra     L1
+                      00074 
+                      00075 
+                      00076 ;;;;;;; Initial subroutine ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+                      00077 ;
+                      00078 ; This subroutine performs SOME of the initializations of variables and registers.
+                      00079 ; YOU will need to add those that are omitted/needed for your specific code
+                      00080 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+000020                00081 Initial
+                      00082         MOVLF  low HalfPeriod,DTIMEL    ; Load DTIME with HalfPeriod constant
+000020 0E40               M         movlw   low HalfPeriod
+000022 6E06               M         movwf   DTIMEL
+                      00083         MOVLF  high HalfPeriod,DTIMEH
+000024 0E0D               M         movlw   high HalfPeriod
+000026 6E05               M         movwf   DTIMEH
+                      00084         MOVLF  upper HalfPeriod,DTIMEX
+000028 0E03               M         movlw   upper HalfPeriod
+00002A 6E04               M         movwf   DTIMEX
+                      00085         
+00002C 6A94           00086         clrf TRISC                      ; Set I/O for PORTC
+00002E 6A8B           00087         clrf LATC                       ; Clear lines on PORTC
+                      00088         MOVLF  B'00000011',T1CON        ; 16 bit timer and Turn on TMR1
+000030 0E03               M         movlw   B'00000011'
+000032 6ECD               M         movwf   T1CON
+                      00089         MOVLF  B'00001000',CCP1CON      ; Select compare mode
+000034 0E08               M         movlw   B'00001000'
+000036 6EBB               M         movwf   CCP1CON
+000038 010F           00090         MOVLB 0X0F                              ; Set BSR to bank F for SFRs outside of access bank                             
+00003A 0E00           00091         MOVLW  B'00000000'              ; NOTE: Macro cannot be used, does not handle when a=1
+00003C 6F2D           00092         MOVWF CCPTMRS0,1                ; Set TMR1 for use with ECCP1, a=1!!
+00003E 8ED0           00093         bsf  RCON,IPEN                  ; Enable priority levels
+000040 909F           00094         bcf  IPR1,TMR1IP                ; Assign low priority to TMR1 interrupts
+000042 92A5           00095         bcf  IPR3,CCP1IP                ;  and to ECCP1 interrupts
+000044 6A02           00096         clrf  TMR1X                     ; Clear TMR1X extension
+                      00097         MOVLF  upper HalfPeriod,CCPR1X  ; Make first 24-bit compare occur quickly 
+000046 0E03               M         movlw   upper HalfPeriod
+000048 6E03               M         movwf   CCPR1X
+                      00098                                         ;  16bit+8bit ext Note: 200000 (= 0x30D40)
+00004A 82A3           00099         bsf  PIE3,CCP1IE                ; Enable ECCP1 interrupts
+00004C 809D           00100         bsf  PIE1,TMR1IE                ; Enable TMR1 interrupts
+00004E 8CF2           00101         bsf  INTCON,GIEL                ; Enable low-priority interrupts to CPU
+000050 8EF2           00102         bsf  INTCON,GIEH                ; Enable all interrupts
+000052 0012           00103         return
+                      00104 
+                      00105 ;;;;;;; RPG subroutine ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+                      00106 ;
+                      00107 ; Credit: This subroutine modified from Peatman book Chapter 8 - RPG
+                      00108 ; This subroutine deciphers RPG changes into values of DIR_RPG of 0, +1, or -1.
+                      00109 ; DIR_RPG = +1 for CW change, 0 for no change, and -1 for CCW change.
+                      00110 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+                      00111         
+000054                00112 RPG
+000054 6A07           00113         clrf   DIR_RPG          ; Clear for "no change" return value.
+000056 5083           00114         movf   PORTD,W          ; Copy PORTD into W.
+000058 6E08           00115         movwf  RPG_TEMP         ;  and RPG_TEMP.
+00005A 1809           00116         xorwf  OLDPORTD,W       ; Check for any change?
+00005C 0B03           00117         andlw  B'00000011'      ; Masks just the RPG pins          
+00005E E0??           00118         bz      L8              ; If zero, RPG has not moved, ->return
+                      00119         ; But if the two bits have changed then...
+                      00120         ; Form what a CCW change would produce.                 
+000060 3009           00121         rrcf OLDPORTD,W         ; Rotate right once into carry bit   
+000062 E3??           00122         bnc L9                  ; If no carry, then bit 0 was a 0 -> branch to L9
+000064 92E8           00123         bcf  WREG,1             ; Otherwise, bit 0 was a 1. Then clear bit 1
+                      00124                                 ; to simulate what a CCW change would produce
+000066 D???           00125         bra L10                 ; Branch to compare if RPG actually matches new CCW pattern in WREG
+000068                00126 L9
+000068 82E8           00127         bsf  WREG,1             ; Set bit 1 since there was no carry
+                      00128                                 ; again to simulate what CCW would produce
+00006A                00129 L10                             ; Test direction of RPG
+00006A 1808           00130         xorwf  RPG_TEMP,W       ; Did the RPG actually change to this output?
+00006C 0B03           00131         andlw  B'00000011'      ; Masks the RPG pins  
+00006E E1??           00132         bnz L11                 ; If not zero, then branch to L11 for CW case
+000070 0607           00133         decf DIR_RPG,F          ; If zero then change DIR_RPG to -1, must be CCW. 
+000072 D???           00134         bra     L8              ; Done so branch to return
+000074                00135 L11                             ; CW case 
+000074 2A07           00136         incf DIR_RPG,F          ; Change DIR_RPG to +1 for CW.
+000076                00137 L8
+000076 C008 F009      00138         movff  RPG_TEMP,OLDPORTD        ; Save RPG state as OLDPORTD
+00007A 0012           00139         return
+                      00140 
+                      00141 ;;;;;;; HiPriISR interrupt service routine ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+                      00142 
+00007C                00143 HiPriISR                        ; High-priority interrupt service routine
+                      00144 ;       <execute the handler for interrupt source>
+                      00145 ;       <clear that source's interrupt flag>
+00007C 0011           00146         retfie  FAST            ; Return and restore STATUS, WREG, and BSR
+                      00147                                 ; from shadow registers
+                      00148 
+                      00149 ;;;;;;; LoPriISR interrupt service routine ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+                      00150 
+00007E                00151 LoPriISR                                ; Low-priority interrupt service routine
+00007E CFD8 F001      00152         movff  STATUS,STATUS_TEMP       ; Set aside STATUS and WREG
+000082 6E00           00153         movwf  WREG_TEMP
+                      00154 
+000084                00155 L2
+000084 A2A4           00156         btfss PIR3,CCP1IF
+000086 D???           00157         bra     L3
+000088 D???           00158             rcall  CCP1handler          ; Call CCP1handler for generating RC2 output
+00008A D???           00159         bra     L2
+00008C                00160 L3
+00008C A09E           00161         btfss PIR1,TMR1IF
+00008E D???           00162         bra     L4
+000090 D???           00163             rcall TMR1handler           ; Call TMR1handler for timing with CCP1
+000092 D???           00164         bra     L2
+000094                00165 L4
+000094 5000           00166         movf  WREG_TEMP,W               ; Restore WREG and STATUS
+000096 C001 FFD8      00167         movff  STATUS_TEMP,STATUS
+00009A 0010           00168         retfie                          ; Return from interrupt, reenabling GIEL
+                      00169 
+00009C                00170 CCP1handler                     ; First must test if TMR1IF occurred at the same time
+00009C A09E           00171         btfss PIR1,TMR1IF       ; If TMR1's overflow flag is set? skip to test CCP bit7
+00009E D???           00172         bra     L5              ; If TMR1F was clear, branch to check extension bytes
+0000A0 BEBD           00173         btfsc CCPR1H,7          ; Is bit 7 a 0? Then TMR1/CCP just rolled over, need to inc TMR1X
+0000A2 D???           00174         bra     L5              ; Is bit 7 a 1? Then TMR1/CCP is full, TMR1handler already inc TMR1X 
+0000A4 2A02           00175         incf  TMR1X,F           ; TMR1/CCP just rolled over, must increment TMR1 extension
+0000A6 909E           00176         bcf  PIR1,TMR1IF        ; and clear flag (Since TMR1 handler was unable to-arrived here first)
+0000A8                00177 L5
+0000A8 5002           00178         movf  TMR1X,W           ; Check whether extensions are equal
+0000AA 5C03           00179         subwf  CCPR1X,W
+0000AC E1??           00180         bnz     L7              ; If not, branch to return
+0000AE 70BB           00181         btg  CCP1CON,0          ; If zero, they are equal, and toggle control bit H/L
+0000B0 5006           00182         movf  DTIMEL,W          ; and add half period to CCPR1 to add more pulse time
+0000B2 26BC           00183         addwf  CCPR1L,F
+0000B4 5005           00184         movf  DTIMEH,W
+0000B6 22BD           00185         addwfc  CCPR1H,F
+0000B8 5004           00186         movf  DTIMEX,W
+0000BA 2203           00187         addwfc  CCPR1X,F
+0000BC                00188 L7
+0000BC 92A4           00189         bcf  PIR3,CCP1IF        ; Clear flag
+0000BE 0012           00190         return
+                      00191 
+0000C0                00192 TMR1handler
+0000C0 2A02           00193         incf  TMR1X,F           ;Increment Timer1 extension
+0000C2 909E           00194         bcf  PIR1,TMR1IF        ;Clear flag and return to service routine
+0000C4 0012           00195         return
+                      00196 
+                      00197         end
+
+Errors   :     0
+Warnings :     0 reported,     0 suppressed
+Messages :     0 reported,     1 suppressed
+
+

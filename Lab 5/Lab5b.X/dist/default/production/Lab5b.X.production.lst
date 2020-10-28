@@ -1,0 +1,848 @@
+
+
+Microchip MPLAB XC8 Assembler V2.05 build -831301201 
+                                                                                               Wed Oct 28 00:16:13 2020
+
+Microchip MPLAB XC8 C Compiler v2.05 (Free license) build 20181220022703 Og1 
+     1                           	processor	18F87K22
+     2                           	fnconf	rparam,??,?,0
+     3                           	opt	pw 120
+     4                           	opt	flic
+     5                           	psect	cinit,global,reloc=2,class=CODE,delta=1
+     6                           	psect	bssCOMRAM,global,class=COMRAM,space=1,delta=1,noexec
+     7                           	psect	cstackCOMRAM,global,class=COMRAM,space=1,delta=1,noexec
+     8                           	psect	text0,global,reloc=2,class=CODE,delta=1
+     9                           	psect	text1,global,reloc=2,class=CODE,delta=1
+    10                           	psect	intcodelo,global,reloc=2,class=CODE,delta=1
+    11                           	psect	text3,global,reloc=2,class=CODE,delta=1
+    12                           	psect	intcode,global,reloc=2,class=CODE,delta=1
+    13                           	psect	intcode_body,global,reloc=2,class=CODE,delta=1
+    14                           	psect	intsave_regs,global,class=BIGRAM,space=1,delta=1,noexec
+    15                           	psect	rparam,global,class=COMRAM,space=1,delta=1,noexec
+    16                           	psect	temp,global,ovrld,common,class=COMRAM,space=1,delta=1
+    17  0000                     
+    18                           ; Version 2.05
+    19                           ; Generated 20/12/2018 GMT
+    20                           ; 
+    21                           ; Copyright © 2018, Microchip Technology Inc. and its subsidiaries ("Microchip")
+    22                           ; All rights reserved.
+    23                           ; 
+    24                           ; This software is developed by Microchip Technology Inc. and its subsidiaries ("Microch
+      +                          ip").
+    25                           ; 
+    26                           ; Redistribution and use in source and binary forms, with or without modification, are
+    27                           ; permitted provided that the following conditions are met:
+    28                           ; 
+    29                           ;     1. Redistributions of source code must retain the above copyright notice, this lis
+      +                          t of
+    30                           ;        conditions and the following disclaimer.
+    31                           ; 
+    32                           ;     2. Redistributions in binary form must reproduce the above copyright notice, this 
+      +                          list
+    33                           ;        of conditions and the following disclaimer in the documentation and/or other
+    34                           ;        materials provided with the distribution.
+    35                           ; 
+    36                           ;     3. Microchip's name may not be used to endorse or promote products derived from th
+      +                          is
+    37                           ;        software without specific prior written permission.
+    38                           ; 
+    39                           ; THIS SOFTWARE IS PROVIDED BY MICROCHIP "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES,
+    40                           ; INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS F
+      +                          OR
+    41                           ; PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL MICROCHIP BE LIABLE FOR ANY DIRECT, INDIREC
+      +                          T,
+    42                           ; INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING BUT NOT LIMITED TO
+    43                           ; PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA OR PROFITS; OR BUSINESS
+    44                           ; INTERRUPTION) HOWSOEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, ST
+      +                          RICT
+    45                           ; LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE U
+      +                          SE OF
+    46                           ; THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+    47                           ; 
+    48                           ; 
+    49                           ; Code-generator required, PIC18F87K22 Definitions
+    50                           ; 
+    51                           ; SFR Addresses
+    52  0000                     _T0CONbits	set	4053
+    53  0000                     _INTCONbits	set	4082
+    54  0000                     _INTCON2bits	set	4081
+    55  0000                     _RCONbits	set	4048
+    56  0000                     _TMR0H	set	4055
+    57  0000                     _TMR0L	set	4054
+    58  0000                     _T0CON	set	4053
+    59  0000                     _TRISB	set	3987
+    60  0000                     _LATC	set	3979
+    61  0000                     _TRISC	set	3988
+    62  0000                     _LATD	set	3980
+    63  0000                     _TRISD	set	3989
+    64                           
+    65                           ; #config settings
+    66  0000                     
+    67                           	psect	cinit
+    68  000082                     __pcinit:
+    69                           	opt callstack 0
+    70  000082                     start_initialization:
+    71                           	opt callstack 0
+    72  000082                     __initialization:
+    73                           	opt callstack 0
+    74                           
+    75                           ; Clear objects allocated to COMRAM (2 bytes)
+    76  000082  6A05               	clrf	(__pbssCOMRAM+1)& (0+255),c
+    77  000084  6A04               	clrf	__pbssCOMRAM& (0+255),c
+    78  000086                     end_of_initialization:
+    79                           	opt callstack 0
+    80  000086                     __end_of__initialization:
+    81                           	opt callstack 0
+    82  000086  9006               	bcf	int$flags,0,c	;clear compiler interrupt flag (level 1)
+    83  000088  9206               	bcf	int$flags,1,c	;clear compiler interrupt flag (level 2)
+    84  00008A  0100               	movlb	0
+    85  00008C  EF48  F000         	goto	_main	;jump to C main() function
+    86                           
+    87                           	psect	bssCOMRAM
+    88  000004                     __pbssCOMRAM:
+    89                           	opt callstack 0
+    90  000004                     _Alive_count:
+    91                           	opt callstack 0
+    92  000004                     	ds	2
+    93                           
+    94                           	psect	cstackCOMRAM
+    95  000001                     __pcstackCOMRAM:
+    96                           	opt callstack 0
+    97  000001                     ??_LoPriISR:
+    98                           
+    99                           ; 1 bytes @ 0x0
+   100  000001                     	ds	3
+   101  000004                     
+   102                           ; 1 bytes @ 0x3
+   103 ;;
+   104 ;;Main: autosize = 0, tempsize = 0, incstack = 0, save=0
+   105 ;;
+   106 ;; *************** function _main *****************
+   107 ;; Defined at:
+   108 ;;		line 57 in file "../Herrin_Sage_Lab5C.c"
+   109 ;; Parameters:    Size  Location     Type
+   110 ;;		None
+   111 ;; Auto vars:     Size  Location     Type
+   112 ;;		None
+   113 ;; Return value:  Size  Location     Type
+   114 ;;                  1    wreg      void 
+   115 ;; Registers used:
+   116 ;;		wreg, status,2, cstack
+   117 ;; Tracked objects:
+   118 ;;		On entry : 0/0
+   119 ;;		On exit  : 0/0
+   120 ;;		Unchanged: 0/0
+   121 ;; Data sizes:     COMRAM   BANK0   BANK1   BANK2   BANK3   BANK4   BANK5   BANK6   BANK7   BANK8   BANK9  BANK10  BANK1
+      +1  BANK12  BANK13  BANK14  BANK15
+   122 ;;      Params:         0       0       0       0       0       0       0       0       0       0       0       0       
+      +0       0       0       0       0
+   123 ;;      Locals:         0       0       0       0       0       0       0       0       0       0       0       0       
+      +0       0       0       0       0
+   124 ;;      Temps:          0       0       0       0       0       0       0       0       0       0       0       0       
+      +0       0       0       0       0
+   125 ;;      Totals:         0       0       0       0       0       0       0       0       0       0       0       0       
+      +0       0       0       0       0
+   126 ;;Total ram usage:        0 bytes
+   127 ;; Hardware stack levels required when called:    4
+   128 ;; This function calls:
+   129 ;;		_Initial
+   130 ;; This function is called by:
+   131 ;;		Startup code after reset
+   132 ;; This function uses a non-reentrant model
+   133 ;;
+   134                           
+   135                           	psect	text0
+   136  000090                     __ptext0:
+   137                           	opt callstack 0
+   138  000090                     _main:
+   139                           	opt callstack 27
+   140                           
+   141                           ;incstack = 0
+   142  000090  EC22  F000         	call	_Initial	;wreg free
+   143  000094                     l35:
+   144  000094  D7FF               	goto	l35
+   145  000096                     __end_of_main:
+   146                           	opt callstack 0
+   147                           
+   148 ;; *************** function _Initial *****************
+   149 ;; Defined at:
+   150 ;;		line 71 in file "../Herrin_Sage_Lab5C.c"
+   151 ;; Parameters:    Size  Location     Type
+   152 ;;		None
+   153 ;; Auto vars:     Size  Location     Type
+   154 ;;		None
+   155 ;; Return value:  Size  Location     Type
+   156 ;;                  1    wreg      void 
+   157 ;; Registers used:
+   158 ;;		wreg, status,2
+   159 ;; Tracked objects:
+   160 ;;		On entry : 0/0
+   161 ;;		On exit  : 0/0
+   162 ;;		Unchanged: 0/0
+   163 ;; Data sizes:     COMRAM   BANK0   BANK1   BANK2   BANK3   BANK4   BANK5   BANK6   BANK7   BANK8   BANK9  BANK10  BANK1
+      +1  BANK12  BANK13  BANK14  BANK15
+   164 ;;      Params:         0       0       0       0       0       0       0       0       0       0       0       0       
+      +0       0       0       0       0
+   165 ;;      Locals:         0       0       0       0       0       0       0       0       0       0       0       0       
+      +0       0       0       0       0
+   166 ;;      Temps:          0       0       0       0       0       0       0       0       0       0       0       0       
+      +0       0       0       0       0
+   167 ;;      Totals:         0       0       0       0       0       0       0       0       0       0       0       0       
+      +0       0       0       0       0
+   168 ;;Total ram usage:        0 bytes
+   169 ;; Hardware stack levels used:    1
+   170 ;; Hardware stack levels required when called:    3
+   171 ;; This function calls:
+   172 ;;		Nothing
+   173 ;; This function is called by:
+   174 ;;		_main
+   175 ;; This function uses a non-reentrant model
+   176 ;;
+   177                           
+   178                           	psect	text1
+   179  000044                     __ptext1:
+   180                           	opt callstack 0
+   181  000044                     _Initial:
+   182                           	opt callstack 27
+   183                           
+   184                           ;../Herrin_Sage_Lab5C.c: 73:     TRISD = 0x00;
+   185                           
+   186                           ;incstack = 0
+   187  000044  0E00               	movlw	0
+   188  000046  6E95               	movwf	3989,c	;volatile
+   189                           
+   190                           ;../Herrin_Sage_Lab5C.c: 74:     LATD = 0x00;
+   191  000048  0E00               	movlw	0
+   192  00004A  6E8C               	movwf	3980,c	;volatile
+   193                           
+   194                           ;../Herrin_Sage_Lab5C.c: 75:     TRISC = 0x00;
+   195  00004C  0E00               	movlw	0
+   196  00004E  6E94               	movwf	3988,c	;volatile
+   197                           
+   198                           ;../Herrin_Sage_Lab5C.c: 76:     LATC = 0x00;
+   199  000050  0E00               	movlw	0
+   200  000052  6E8B               	movwf	3979,c	;volatile
+   201                           
+   202                           ;../Herrin_Sage_Lab5C.c: 77:     TRISB = 0XC0;
+   203  000054  0EC0               	movlw	192
+   204  000056  6E93               	movwf	3987,c	;volatile
+   205                           
+   206                           ;../Herrin_Sage_Lab5C.c: 84:     T0CON = 0b00000101;
+   207  000058  0E05               	movlw	5
+   208  00005A  6ED5               	movwf	4053,c	;volatile
+   209                           
+   210                           ;../Herrin_Sage_Lab5C.c: 85:     TMR0L = 0;
+   211  00005C  0E00               	movlw	0
+   212  00005E  6ED6               	movwf	4054,c	;volatile
+   213                           
+   214                           ;../Herrin_Sage_Lab5C.c: 86:     TMR0H = 0;
+   215  000060  0E00               	movlw	0
+   216  000062  6ED7               	movwf	4055,c	;volatile
+   217                           
+   218                           ;../Herrin_Sage_Lab5C.c: 90:     RCONbits.IPEN = 1;
+   219  000064  8ED0               	bsf	4048,7,c	;volatile
+   220                           
+   221                           ;../Herrin_Sage_Lab5C.c: 91:     INTCON2bits.TMR0IP = 0;
+   222  000066  94F1               	bcf	4081,2,c	;volatile
+   223                           
+   224                           ;../Herrin_Sage_Lab5C.c: 93:     INTCONbits.TMR0IE = 1;
+   225  000068  8AF2               	bsf	4082,5,c	;volatile
+   226                           
+   227                           ;../Herrin_Sage_Lab5C.c: 94:     INTCONbits.GIEL = 1;
+   228  00006A  8CF2               	bsf	4082,6,c	;volatile
+   229                           
+   230                           ;../Herrin_Sage_Lab5C.c: 95:     INTCONbits.GIEH = 1;
+   231  00006C  8EF2               	bsf	4082,7,c	;volatile
+   232                           
+   233                           ;../Herrin_Sage_Lab5C.c: 97:     T0CONbits.TMR0ON = 1;
+   234  00006E  8ED5               	bsf	4053,7,c	;volatile
+   235  000070  0012               	return		;funcret
+   236  000072                     __end_of_Initial:
+   237                           	opt callstack 0
+   238                           
+   239 ;; *************** function _LoPriISR *****************
+   240 ;; Defined at:
+   241 ;;		line 118 in file "../Herrin_Sage_Lab5C.c"
+   242 ;; Parameters:    Size  Location     Type
+   243 ;;		None
+   244 ;; Auto vars:     Size  Location     Type
+   245 ;;		None
+   246 ;; Return value:  Size  Location     Type
+   247 ;;                  1    wreg      void 
+   248 ;; Registers used:
+   249 ;;		wreg, status,2, status,0, cstack
+   250 ;; Tracked objects:
+   251 ;;		On entry : 0/0
+   252 ;;		On exit  : 0/0
+   253 ;;		Unchanged: 0/0
+   254 ;; Data sizes:     COMRAM   BANK0   BANK1   BANK2   BANK3   BANK4   BANK5   BANK6   BANK7   BANK8   BANK9  BANK10  BANK1
+      +1  BANK12  BANK13  BANK14  BANK15
+   255 ;;      Params:         0       0       0       0       0       0       0       0       0       0       0       0       
+      +0       0       0       0       0
+   256 ;;      Locals:         0       0       0       0       0       0       0       0       0       0       0       0       
+      +0       0       0       0       0
+   257 ;;      Temps:          3       0       0       0       0       0       0       0       0       0       0       0       
+      +0       0       0       0       0
+   258 ;;      Totals:         3       0       0       0       0       0       0       0       0       0       0       0       
+      +0       0       0       0       0
+   259 ;;Total ram usage:        3 bytes
+   260 ;; Hardware stack levels used:    1
+   261 ;; Hardware stack levels required when called:    2
+   262 ;; This function calls:
+   263 ;;		_TMR0handler
+   264 ;; This function is called by:
+   265 ;;		Interrupt level 1
+   266 ;; This function uses a non-reentrant model
+   267 ;;
+   268                           
+   269                           	psect	intcodelo
+   270  000018                     __pintcodelo:
+   271                           	opt callstack 0
+   272  000018                     _LoPriISR:
+   273                           	opt callstack 27
+   274                           
+   275                           ;incstack = 0
+   276  000018  8006               	bsf	btemp,0,c	;set compiler interrupt flag (level 1)
+   277  00001A  CFD8 F001          	movff	status,??_LoPriISR
+   278  00001E  CFE8 F002          	movff	wreg,??_LoPriISR+1
+   279  000022  CFE0 F003          	movff	bsr,??_LoPriISR+2
+   280  000026                     i1l51:
+   281                           
+   282                           ;../Herrin_Sage_Lab5C.c: 121:         if( INTCONbits.TMR0IF ) {
+   283  000026  A4F2               	btfss	4082,2,c	;volatile
+   284  000028  D003               	goto	i1l55
+   285                           
+   286                           ;../Herrin_Sage_Lab5C.c: 122:             TMR0handler();
+   287  00002A  EC39  F000         	call	_TMR0handler	;wreg free
+   288                           
+   289                           ;../Herrin_Sage_Lab5C.c: 123:             continue;
+   290  00002E  D7FB               	goto	i1l51
+   291  000030                     i1l55:
+   292  000030  C003  FFE0         	movff	??_LoPriISR+2,bsr
+   293  000034  C002  FFE8         	movff	??_LoPriISR+1,wreg
+   294  000038  C001  FFD8         	movff	??_LoPriISR,status
+   295  00003C  9006               	bcf	btemp,0,c	;clear compiler interrupt flag (level 1)
+   296  00003E  0010               	retfie	
+   297  000040                     __end_of_LoPriISR:
+   298                           	opt callstack 0
+   299                           
+   300 ;; *************** function _TMR0handler *****************
+   301 ;; Defined at:
+   302 ;;		line 134 in file "../Herrin_Sage_Lab5C.c"
+   303 ;; Parameters:    Size  Location     Type
+   304 ;;		None
+   305 ;; Auto vars:     Size  Location     Type
+   306 ;;		None
+   307 ;; Return value:  Size  Location     Type
+   308 ;;                  1    wreg      void 
+   309 ;; Registers used:
+   310 ;;		wreg, status,2, status,0
+   311 ;; Tracked objects:
+   312 ;;		On entry : 0/0
+   313 ;;		On exit  : 0/0
+   314 ;;		Unchanged: 0/0
+   315 ;; Data sizes:     COMRAM   BANK0   BANK1   BANK2   BANK3   BANK4   BANK5   BANK6   BANK7   BANK8   BANK9  BANK10  BANK1
+      +1  BANK12  BANK13  BANK14  BANK15
+   316 ;;      Params:         0       0       0       0       0       0       0       0       0       0       0       0       
+      +0       0       0       0       0
+   317 ;;      Locals:         0       0       0       0       0       0       0       0       0       0       0       0       
+      +0       0       0       0       0
+   318 ;;      Temps:          0       0       0       0       0       0       0       0       0       0       0       0       
+      +0       0       0       0       0
+   319 ;;      Totals:         0       0       0       0       0       0       0       0       0       0       0       0       
+      +0       0       0       0       0
+   320 ;;Total ram usage:        0 bytes
+   321 ;; Hardware stack levels used:    1
+   322 ;; Hardware stack levels required when called:    1
+   323 ;; This function calls:
+   324 ;;		Nothing
+   325 ;; This function is called by:
+   326 ;;		_LoPriISR
+   327 ;; This function uses a non-reentrant model
+   328 ;;
+   329                           
+   330                           	psect	text3
+   331  000072                     __ptext3:
+   332                           	opt callstack 0
+   333  000072                     _TMR0handler:
+   334                           	opt callstack 27
+   335                           
+   336                           ;../Herrin_Sage_Lab5C.c: 139:     LATD ^= 0x10;
+   337                           
+   338                           ;incstack = 0
+   339  000072  0E10               	movlw	16
+   340  000074  1A8C               	xorwf	3980,f,c	;volatile
+   341                           
+   342                           ;../Herrin_Sage_Lab5C.c: 140:     TMR0L = 0xDB;
+   343  000076  0EDB               	movlw	219
+   344  000078  6ED6               	movwf	4054,c	;volatile
+   345                           
+   346                           ;../Herrin_Sage_Lab5C.c: 141:     TMR0H = 0X0B;
+   347  00007A  0E0B               	movlw	11
+   348  00007C  6ED7               	movwf	4055,c	;volatile
+   349                           
+   350                           ;../Herrin_Sage_Lab5C.c: 142:     INTCONbits.TMR0IF = 0;
+   351  00007E  94F2               	bcf	4082,2,c	;volatile
+   352  000080  0012               	return		;funcret
+   353  000082                     __end_of_TMR0handler:
+   354                           	opt callstack 0
+   355                           
+   356 ;; *************** function _HiPriISR *****************
+   357 ;; Defined at:
+   358 ;;		line 107 in file "../Herrin_Sage_Lab5C.c"
+   359 ;; Parameters:    Size  Location     Type
+   360 ;;		None
+   361 ;; Auto vars:     Size  Location     Type
+   362 ;;		None
+   363 ;; Return value:  Size  Location     Type
+   364 ;;                  1    wreg      void 
+   365 ;; Registers used:
+   366 ;;		None
+   367 ;; Tracked objects:
+   368 ;;		On entry : 0/0
+   369 ;;		On exit  : 0/0
+   370 ;;		Unchanged: 0/0
+   371 ;; Data sizes:     COMRAM   BANK0   BANK1   BANK2   BANK3   BANK4   BANK5   BANK6   BANK7   BANK8   BANK9  BANK10  BANK1
+      +1  BANK12  BANK13  BANK14  BANK15
+   372 ;;      Params:         0       0       0       0       0       0       0       0       0       0       0       0       
+      +0       0       0       0       0
+   373 ;;      Locals:         0       0       0       0       0       0       0       0       0       0       0       0       
+      +0       0       0       0       0
+   374 ;;      Temps:          0       0       0       0       0       0       0       0       0       0       0       0       
+      +0       0       0       0       0
+   375 ;;      Totals:         0       0       0       0       0       0       0       0       0       0       0       0       
+      +0       0       0       0       0
+   376 ;;Total ram usage:        0 bytes
+   377 ;; Hardware stack levels used:    1
+   378 ;; This function calls:
+   379 ;;		Nothing
+   380 ;; This function is called by:
+   381 ;;		Interrupt level 2
+   382 ;; This function uses a non-reentrant model
+   383 ;;
+   384                           
+   385                           	psect	intcode
+   386  000008                     __pintcode:
+   387                           	opt callstack 0
+   388  000008                     _HiPriISR:
+   389                           	opt callstack 27
+   390                           
+   391                           ;incstack = 0
+   392  000008  8206               	bsf	btemp,1,c	;set compiler interrupt flag (level 2)
+   393  00000A  EF4B  F000         	goto	int_func
+   394                           
+   395                           	psect	intcode_body
+   396  000096                     __pintcode_body:
+   397                           	opt callstack 27
+   398  000096                     int_func:
+   399                           	opt callstack 27
+   400  000096  9206               	bcf	btemp,1,c	;clear compiler interrupt flag (level 2)
+   401  000098  0011               	retfie		f
+   402  00009A                     __end_of_HiPriISR:
+   403                           	opt callstack 0
+   404  0000                     
+   405                           	psect	rparam
+   406  0000                     
+   407                           	psect	temp
+   408  000006                     btemp:
+   409                           	opt callstack 0
+   410  000006                     	ds	1
+   411  0000                     int$flags	set	btemp
+   412  0000                     wtemp8	set	btemp+1
+   413  0000                     ttemp5	set	btemp+1
+   414  0000                     ttemp6	set	btemp+4
+   415  0000                     ttemp7	set	btemp+8
+   416                           tosu	equ	0xFFF
+   417                           tosh	equ	0xFFE
+   418                           tosl	equ	0xFFD
+   419                           stkptr	equ	0xFFC
+   420                           pclatu	equ	0xFFB
+   421                           pclath	equ	0xFFA
+   422                           pcl	equ	0xFF9
+   423                           tblptru	equ	0xFF8
+   424                           tblptrh	equ	0xFF7
+   425                           tblptrl	equ	0xFF6
+   426                           tablat	equ	0xFF5
+   427                           prodh	equ	0xFF4
+   428                           prodl	equ	0xFF3
+   429                           indf0	equ	0xFEF
+   430                           postinc0	equ	0xFEE
+   431                           postdec0	equ	0xFED
+   432                           preinc0	equ	0xFEC
+   433                           plusw0	equ	0xFEB
+   434                           fsr0h	equ	0xFEA
+   435                           fsr0l	equ	0xFE9
+   436                           wreg	equ	0xFE8
+   437                           indf1	equ	0xFE7
+   438                           postinc1	equ	0xFE6
+   439                           postdec1	equ	0xFE5
+   440                           preinc1	equ	0xFE4
+   441                           plusw1	equ	0xFE3
+   442                           fsr1h	equ	0xFE2
+   443                           fsr1l	equ	0xFE1
+   444                           bsr	equ	0xFE0
+   445                           indf2	equ	0xFDF
+   446                           postinc2	equ	0xFDE
+   447                           postdec2	equ	0xFDD
+   448                           preinc2	equ	0xFDC
+   449                           plusw2	equ	0xFDB
+   450                           fsr2h	equ	0xFDA
+   451                           fsr2l	equ	0xFD9
+   452                           status	equ	0xFD8
+
+
+Data Sizes:
+    Strings     0
+    Constant    0
+    Data        0
+    BSS         2
+    Persistent  0
+    Stack       0
+
+Auto Spaces:
+    Space          Size  Autos    Used
+    COMRAM           94      3       5
+    BANK0           160      0       0
+    BANK1           256      0       0
+    BANK2           256      0       0
+    BANK3           256      0       0
+    BANK4           256      0       0
+    BANK5           256      0       0
+    BANK6           256      0       0
+    BANK7           256      0       0
+    BANK8           256      0       0
+    BANK9           256      0       0
+    BANK10          256      0       0
+    BANK11          256      0       0
+    BANK12          256      0       0
+    BANK13          256      0       0
+    BANK14          256      0       0
+    BANK15           22      0       0
+
+Pointer List with Targets:
+
+    None.
+
+Critical Paths under _main in COMRAM
+
+    None.
+
+Critical Paths under _LoPriISR in COMRAM
+
+    None.
+
+Critical Paths under _HiPriISR in COMRAM
+
+    None.
+
+Critical Paths under _main in BANK0
+
+    None.
+
+Critical Paths under _LoPriISR in BANK0
+
+    None.
+
+Critical Paths under _HiPriISR in BANK0
+
+    None.
+
+Critical Paths under _main in BANK1
+
+    None.
+
+Critical Paths under _LoPriISR in BANK1
+
+    None.
+
+Critical Paths under _HiPriISR in BANK1
+
+    None.
+
+Critical Paths under _main in BANK2
+
+    None.
+
+Critical Paths under _LoPriISR in BANK2
+
+    None.
+
+Critical Paths under _HiPriISR in BANK2
+
+    None.
+
+Critical Paths under _main in BANK3
+
+    None.
+
+Critical Paths under _LoPriISR in BANK3
+
+    None.
+
+Critical Paths under _HiPriISR in BANK3
+
+    None.
+
+Critical Paths under _main in BANK4
+
+    None.
+
+Critical Paths under _LoPriISR in BANK4
+
+    None.
+
+Critical Paths under _HiPriISR in BANK4
+
+    None.
+
+Critical Paths under _main in BANK5
+
+    None.
+
+Critical Paths under _LoPriISR in BANK5
+
+    None.
+
+Critical Paths under _HiPriISR in BANK5
+
+    None.
+
+Critical Paths under _main in BANK6
+
+    None.
+
+Critical Paths under _LoPriISR in BANK6
+
+    None.
+
+Critical Paths under _HiPriISR in BANK6
+
+    None.
+
+Critical Paths under _main in BANK7
+
+    None.
+
+Critical Paths under _LoPriISR in BANK7
+
+    None.
+
+Critical Paths under _HiPriISR in BANK7
+
+    None.
+
+Critical Paths under _main in BANK8
+
+    None.
+
+Critical Paths under _LoPriISR in BANK8
+
+    None.
+
+Critical Paths under _HiPriISR in BANK8
+
+    None.
+
+Critical Paths under _main in BANK9
+
+    None.
+
+Critical Paths under _LoPriISR in BANK9
+
+    None.
+
+Critical Paths under _HiPriISR in BANK9
+
+    None.
+
+Critical Paths under _main in BANK10
+
+    None.
+
+Critical Paths under _LoPriISR in BANK10
+
+    None.
+
+Critical Paths under _HiPriISR in BANK10
+
+    None.
+
+Critical Paths under _main in BANK11
+
+    None.
+
+Critical Paths under _LoPriISR in BANK11
+
+    None.
+
+Critical Paths under _HiPriISR in BANK11
+
+    None.
+
+Critical Paths under _main in BANK12
+
+    None.
+
+Critical Paths under _LoPriISR in BANK12
+
+    None.
+
+Critical Paths under _HiPriISR in BANK12
+
+    None.
+
+Critical Paths under _main in BANK13
+
+    None.
+
+Critical Paths under _LoPriISR in BANK13
+
+    None.
+
+Critical Paths under _HiPriISR in BANK13
+
+    None.
+
+Critical Paths under _main in BANK14
+
+    None.
+
+Critical Paths under _LoPriISR in BANK14
+
+    None.
+
+Critical Paths under _HiPriISR in BANK14
+
+    None.
+
+Critical Paths under _main in BANK15
+
+    None.
+
+Critical Paths under _LoPriISR in BANK15
+
+    None.
+
+Critical Paths under _HiPriISR in BANK15
+
+    None.
+
+Call Graph Tables:
+
+ ---------------------------------------------------------------------------------
+ (Depth) Function   	        Calls       Base Space   Used Autos Params    Refs
+ ---------------------------------------------------------------------------------
+ (0) _main                                                 0     0      0       0
+                            _Initial
+ ---------------------------------------------------------------------------------
+ (1) _Initial                                              0     0      0       0
+ ---------------------------------------------------------------------------------
+ Estimated maximum stack depth 1
+ ---------------------------------------------------------------------------------
+ (Depth) Function   	        Calls       Base Space   Used Autos Params    Refs
+ ---------------------------------------------------------------------------------
+ (2) _LoPriISR                                             3     3      0       0
+                                              0 COMRAM     3     3      0
+                        _TMR0handler
+ ---------------------------------------------------------------------------------
+ (3) _TMR0handler                                          0     0      0       0
+ ---------------------------------------------------------------------------------
+ Estimated maximum stack depth 3
+ ---------------------------------------------------------------------------------
+ (Depth) Function   	        Calls       Base Space   Used Autos Params    Refs
+ ---------------------------------------------------------------------------------
+ (4) _HiPriISR                                             0     0      0       0
+ ---------------------------------------------------------------------------------
+ Estimated maximum stack depth 4
+ ---------------------------------------------------------------------------------
+
+ Call Graph Graphs:
+
+ _main (ROOT)
+   _Initial
+
+ _LoPriISR (ROOT)
+   _TMR0handler
+
+ _HiPriISR (ROOT)
+
+ Address spaces:
+Name               Size   Autos  Total    Cost      Usage
+BIGRAM             F15      0       0      37        0.0%
+EEDATA             400      0       0       0        0.0%
+BITBANK14          100      0       0      33        0.0%
+BANK14             100      0       0      34        0.0%
+BITBANK13          100      0       0      31        0.0%
+BANK13             100      0       0      32        0.0%
+BITBANK12          100      0       0      29        0.0%
+BANK12             100      0       0      30        0.0%
+BITBANK11          100      0       0      27        0.0%
+BANK11             100      0       0      28        0.0%
+BITBANK10          100      0       0      25        0.0%
+BANK10             100      0       0      26        0.0%
+BITBANK9           100      0       0      23        0.0%
+BANK9              100      0       0      24        0.0%
+BITBANK8           100      0       0      21        0.0%
+BANK8              100      0       0      22        0.0%
+BITBANK7           100      0       0      19        0.0%
+BANK7              100      0       0      20        0.0%
+BITBANK6           100      0       0      17        0.0%
+BANK6              100      0       0      18        0.0%
+BITBANK5           100      0       0      15        0.0%
+BANK5              100      0       0      16        0.0%
+BITBANK4           100      0       0      13        0.0%
+BANK4              100      0       0      14        0.0%
+BITBANK3           100      0       0      10        0.0%
+BANK3              100      0       0      11        0.0%
+BITBANK2           100      0       0       8        0.0%
+BANK2              100      0       0       9        0.0%
+BITBANK1           100      0       0       6        0.0%
+BANK1              100      0       0       7        0.0%
+BITBANK0            A0      0       0       4        0.0%
+BANK0               A0      0       0       5        0.0%
+BITCOMRAM           5E      0       0       0        0.0%
+COMRAM              5E      3       5       1        5.3%
+BITBANK15           16      0       0      35        0.0%
+BANK15              16      0       0      36        0.0%
+BITSFR_1             0      0       0     200        0.0%
+SFR_1                0      0       0     200        0.0%
+BITSFR               0      0       0     200        0.0%
+SFR                  0      0       0     200        0.0%
+STACK                0      0       0       2        0.0%
+NULL                 0      0       0       0        0.0%
+ABS                  0      0       5      12        0.0%
+DATA                 0      0       5       3        0.0%
+CODE                 0      0       0       0        0.0%
+
+
+Microchip Technology PIC18 Macro Assembler V2.05 build -831301201 
+Symbol Table                                                                                   Wed Oct 28 00:16:13 2020
+
+                     l35 0094                       bsr 000FE0              __CFG_BORV$2 000000  
+                    wreg 000FE8                     _LATC 000F8B                     _LATD 000F8C  
+                   i1l51 0026                     i1l55 0030                     _main 0090  
+                   btemp 0006            __CFG_BOREN$ON 000000                     start 0040  
+          __CFG_FOSC$HS1 000000             ___param_bank 000000          __end_of_Initial 0072  
+                  ?_main 0001                    _T0CON 000FD5                    _TMR0H 000FD7  
+                  _TMR0L 000FD6                    _TRISB 000F93                    _TRISC 000F94  
+                  _TRISD 000F95                    ttemp5 0007                    ttemp6 000A  
+                  ttemp7 000E                    status 000FD8                    wtemp8 0007  
+       __end_of_HiPriISR 009A          __initialization 0082         __end_of_LoPriISR 0040  
+            _Alive_count 0004             __end_of_main 0096                   ??_main 0004  
+          __activetblptr 000000           __CFG_WDTEN$OFF 000000                ??_Initial 0004  
+         __CFG_PWRTEN$ON 000000           __CFG_XINST$OFF 000000             ?_TMR0handler 0001  
+             __accesstop 0060  __end_of__initialization 0086            ___rparam_used 000001  
+         __pcstackCOMRAM 0001                ?_HiPriISR 0001                ?_LoPriISR 0001  
+        __CFG_PLLCFG$OFF 000000               ??_HiPriISR 0001               ??_LoPriISR 0001  
+                _Initial 0044                  __Hparam 0000                  __Lparam 0000  
+                __pcinit 0082                  __ramtop 1000                  __ptext0 0090  
+                __ptext1 0044                  __ptext3 0072                _T0CONbits 000FD5  
+   __size_of_TMR0handler 0010           __pintcode_body 0096     end_of_initialization 0086  
+                int_func 0096      start_initialization 0082        __size_of_HiPriISR 0092  
+      __size_of_LoPriISR 0028              __pbssCOMRAM 0004                 ?_Initial 0001  
+      __CFG_CCP2MX$PORTC 000000                __pintcode 0008              __pintcodelo 0018  
+               _RCONbits 000FD0            ??_TMR0handler 0001                 _HiPriISR 0008  
+            _INTCON2bits 000FF1                 _LoPriISR 0018                 __Hrparam 0000  
+       __size_of_Initial 002E                 __Lrparam 0000      __end_of_TMR0handler 0082  
+          __size_of_main 0006                 int$flags 0006               _INTCONbits 000FF2  
+               intlevel1 0000                 intlevel2 0000              _TMR0handler 0072  
