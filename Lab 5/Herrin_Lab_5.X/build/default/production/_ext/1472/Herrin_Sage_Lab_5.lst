@@ -1,4 +1,4 @@
-MPASM 5.84             HERRIN_SAGE_LAB_5.ASM   10-28-2020  0:45:28         PAGE  1
+MPASM 5.84             HERRIN_SAGE_LAB_5.ASM   10-31-2020  10:29:55         PAGE  1
 
 
 LOC  OBJECT CODE     LINE SOURCE TEXT
@@ -913,12 +913,15 @@ LOC  OBJECT CODE     LINE SOURCE TEXT
        0020 
 000448 4880 6C65 6F6C 00744 LCDs    db  "\x80Hello\x00"
        0000 
-000450 57C0 726F 646C 00745 LCDs2   db  "\xC0World!\x00"
-       0021 
+Error[107]  : Illegal digit (x in octal)
+Error[107]  : Illegal digit (C in octal)
+Error[107]  : Illegal digit (x in octal)
+000450 3000 6F57 6C72 00745 LCDs2   db  "\0xC0World!\0x00"
+       2164 3000 
                       00746 ;;;;;;; End of Program ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
                       00747         end
 
-Errors   :     0
+Errors   :     3
 Warnings :     0 reported,     0 suppressed
 Messages :     0 reported,     3 suppressed
 

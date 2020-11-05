@@ -1,0 +1,166 @@
+Disassembly Listing for ExamTest
+Generated From:
+C:/Users/sageh/Documents/5067/ExamTest/ExamTest.X/dist/default/debug/ExamTest.X.debug.cof
+Oct 31, 2020 10:48:07 AM
+
+---  C:/Users/sageh/Documents/5067/ExamTest/ExamTest.asm  -----------------------------------------------
+                                                  1:     ;;;;;;; ASEN 4-5067 Lab3 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+                                                  2:     ; Author: YOUR NAME HERE
+                                                  3:     ; Date  : DATE HERE
+                                                  4:     ;
+                                                  5:     ; DESCRIPTION
+                                                  6:     ; On power up execute the following sequence:
+                                                  7:     ; 	RD5 ON for ~1 second then OFF
+                                                  8:     ; 	RD6 ON for ~1 second then OFF
+                                                  9:     ; 	RD7 ON for ~1 second then OFF
+                                                  10:    ; LOOP on the following forever:
+                                                  11:    ; 	Blink "Alive" LED (RD4) ON for ~1sec then OFF for ~1sec
+                                                  12:    ; 	Read input from RPG (at least every 2ms) connected to pins 
+                                                  13:    ;		RD0 and RD1 and mirror the output onto pins RJ2 and RJ3
+                                                  14:    ; 	ASEN5067 ONLY: Read input from baseboard RD3 button and toggle the value 
+                                                  15:    ;		of RD2 such that the switch being pressed and RELEASED causes 
+                                                  16:    ;		RD2 to change state from ON to OFF or OFF to ON
+                                                  17:    ;	NOTE: ~1 second means +/- 100msec
+                                                  18:    ;
+                                                  19:    ;;;;;;; Program hierarchy ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+                                                  20:    ;
+                                                  21:    ; Mainline
+                                                  22:    ; Loop
+                                                  23:    ; Initial 	- 	Initialize ports and perform LED sequence
+                                                  24:    ; WaitXXXms	- 	Subroutine to wait XXXms
+                                                  25:    ; Wait1sec 	- 	Subroutine to wait 1 sec 
+                                                  26:    ; Check_SW 	- 	Subroutine to check the status of RD3 button and change RD2 (ASEN5519 ONLY)
+                                                  27:    ; Check_RPG	- 	Read the values of the RPG from RD0 and RD1 and display on RJ2 and RJ3
+                                                  28:    ;
+                                                  29:    ;;;;;;; Assembler directives ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+                                                  30:    
+                                                  31:            LIST  P=PIC18F87K22, F=INHX32, C=160, N=0, ST=OFF, MM=OFF, R=DEC, X=ON
+                                                  32:            #include P18F87K22.inc
+                                                  33:    
+                                                  34:    ;		MPLAB configuration directives
+                                                  35:    		
+                                                  36:    		CONFIG	FOSC = HS1, XINST = OFF
+                                                  37:    		CONFIG	PWRTEN = ON, BOREN = ON, BORV = 1
+                                                  38:    		CONFIG 	WDTEN = OFF
+                                                  39:    		
+                                                  40:    ;;;;;;; Hardware notes ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+                                                  41:    ;
+                                                  42:    ;	RPG-A port/pin is RJ2
+                                                  43:    ;	RPG-B port/pin is RJ3
+                                                  44:    
+                                                  45:    ;;;;;;;; Variables ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+                                                  46:    
+                                                  47:            cblock  0x000   ;Start constant block values 
+                                                  48:    	          ;This sets variable VAL1 = 0x001 (literal or file location)
+                                                  49:            endc
+                                                  50:    
+                                                  51:    ;;;;;;; Macro definitions ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+                                                  52:    
+                                                  53:    ; MOVLF is a macro that puts a literal value into a GPR or SFR
+                                                  54:    MOVLF   macro  literal,dest
+                                                  55:            movlw  literal
+                                                  56:            movwf  dest
+                                                  57:    	endm
+                                                  58:    
+                                                  59:    ;;;;;;; Vectors ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+                                                  60:    
+                                                  61:            org  0x0000             ;Reset vector
+0000  0000     NOP                                62:            nop			;One instruction cycle delay.
+0002  EF0E     GOTO 0x1C                          63:            goto  Mainline		;Redirect code to the Mainline Program
+0004  F000     NOP
+                                                  64:    
+                                                  65:            org  0x0008             ;High priority interrupt vector
+0008  EF04     GOTO 0x8                           66:            goto  $                 ;Return to current program counter location
+000A  F000     NOP
+                                                  67:    
+                                                  68:            org  0x0018             ;Low priority interrupt vector
+0018  EF0C     GOTO 0x18                          69:            goto  $                 ;Return to current program counter location
+001A  F000     NOP
+                                                  70:    	
+                                                  71:    	
+                                                  72:    
+                                                  73:    ;;;;;;; Mainline Program ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+                                                  74:        ;ORG	0x0200        
+                                                  75:    ;String	db  "/0xC0ASEN/0x00"
+                                                  76:    Mainline
+                                                  77:        ;ORG	0x0200        
+                                                  78:    ;String	db  "/0xC0ASEN/0x00"
+001C  D800     RCALL 0x1E                         79:            rcall  Initial          ;Jump to initialization routine
+                                                  80:    ;Loop
+                                                  81:    ; PUT YOUR CODE HERE
+                                                  82:            		; Add operand to finish the use of this macro 
+                                                  83:    ;	bra  Loop		; Main loop should run forever after entry
+                                                  84:    
+                                                  85:    ;;;;;;; Initial subroutine ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+                                                  86:    ;
+                                                  87:    ; This subroutine performs all initializations of variables and registers.
+                                                  88:    
+                                                  89:    Initial
+001E  7149     BTG 0x49, 0, BANKED                90:    	BTG CCP3CON,0		
+                                                  91:    	;MOVLF 0x00,0x001	; Set TRISD
+                                                  92:    	;MOVLF 0xC4,0x002
+                                                  93:    	;MOVLB 0x01
+                                                  94:    	;MOVLW 0x23
+                                                  95:    	;MOVWF 0x101,1
+                                                  96:    	;MOVLW 0xA5
+                                                  97:    	;MOVWF 0x102,1
+                                                  98:    	;MOVLF 0x01,STATUS
+                                                  99:    	;MOVLW 0x4B
+                                                  100:   	;LFSR  1,0x101
+                                                  101:   	
+                                                  102:   	
+                                                  103:   	;RLCF  0x02,1,0
+                                                  104:   	;ADDWFC 0x01,0,1
+                                                  105:   	;COMF  PREINC1,1,0
+                                                  106:   		; Set TRISJ
+                                                  107:   		; Turn off all LEDS
+                                                  108:   		; call subroutine to wait 1 second
+                                                  109:   		; Turn ON RD5
+                                                  110:   		; call subroutine to wait 1 second
+                                                  111:   		; Turn OFF RD5
+                                                  112:   		; Turn ON RD6
+                                                  113:   		; call subroutine to wait 1 second
+                                                  114:   		; Turn OFF RD6
+                                                  115:   		; Turn ON RD7
+                                                  116:   		; call subroutine to wait 1 second
+                                                  117:   		; Turn OFF RD7
+                                                  118:           ;return
+                                                  119:   
+                                                  120:   ;;;;;;; WaitXXXms subroutine ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+                                                  121:   ;
+                                                  122:   ; Subroutine to wait XXX ms
+                                                  123:   ; NOTE - STUDENTS replace XXX with some value of your choosing
+                                                  124:   ; Choose a suitable value to decrement a counter in a loop structure and 
+                                                  125:   ; not using an excessive amount of program memory - i.e. don't use 100 nop's
+                                                  126:   		
+                                                  127:   ;WaitXXXms
+                                                  128:   		; Add code here
+                                                  129:   		;return
+                                                  130:   
+                                                  131:   ;;;;;;; Wait1sec subroutine ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+                                                  132:   ;
+                                                  133:   ; Subroutine to wait 1 sec based on calling WaitXXXms YYY times or up to 3 nested loops
+                                                  134:   				
+                                                  135:   ;Wait1sec
+                                                  136:   		; Add code here
+                                                  137:   		;return
+                                                  138:   
+                                                  139:   ;;;;;;; Check_SW1 subroutine ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+                                                  140:   ;
+                                                  141:   ; Subroutine to check the status of RD3 button and change RD2 (ASEN5067 ONLY)
+                                                  142:   				
+                                                  143:   ;Check_SW1
+                                                  144:   		; Add code here
+                                                  145:   		;return
+                                                  146:   
+                                                  147:   ;;;;;;; Check_RPG subroutine ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+                                                  148:   ;
+                                                  149:   ; Subroutine to read the values of the RPG and display on RJ2 and RJ3
+                                                  150:   				
+                                                  151:   ;Check_RPG
+                                                  152:   		; Add code here
+                                                  153:   		;return      
+                                                  154:       ORG	0x0200        
+0200  41C0     RRNCF 0xC0, W, BANKED              155:   String	db  "\xC0ASEN\x00"
+0202  4553     RLNCF 0x53, W, BANKED
+                                                  156:           end

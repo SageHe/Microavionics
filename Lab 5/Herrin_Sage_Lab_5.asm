@@ -742,6 +742,6 @@ LCDstr  db  0x33,0x32,0x28,0x01,0x0c,0x06,0x00  ;Initialization string for LCD
 BYTE_1  db  "\x80BYTE=   \x00"         ;Write "BYTE=" to first line of LCD
 LCDcl   db  "\x80ASEN 5067   \x00"
 LCDs    db  "\x80Hello\x00"
-LCDs2   db  "\xC0World!\x00"
+LCDs2   db  "\0xC0World!\0x00"
 ;;;;;;; End of Program ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
         end
