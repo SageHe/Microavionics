@@ -1,0 +1,174 @@
+[p GLOBOPT AUTOSTATIC IEEE_FLT IEEE_DBL LFSROK EMI_WORD ]
+[d version 1.1 ]
+[d edition pro ]
+[d chip 18F87K22 ]
+[d frameptr 4065 ]
+"4 C:\Program Files (x86)\Microchip\xc8\v2.05\pic\sources\c99\common\fleq.c
+[v ___fleq __fleq `(b  1 e 0 0 ]
+"62 C:\Program Files (x86)\Microchip\xc8\v2.05\pic\sources\c99\common\float.c
+[v ___ftpack __ftpack `(f  1 e 4 0 ]
+"86 C:\Program Files (x86)\Microchip\xc8\v2.05\pic\sources\c99\common\ftadd.c
+[v ___ftadd __ftadd `(f  1 e 4 0 ]
+"54 C:\Program Files (x86)\Microchip\xc8\v2.05\pic\sources\c99\common\ftdiv.c
+[v ___ftdiv __ftdiv `(f  1 e 4 0 ]
+"62 C:\Program Files (x86)\Microchip\xc8\v2.05\pic\sources\c99\common\ftmul.c
+[v ___ftmul __ftmul `(f  1 e 4 0 ]
+"19 C:\Program Files (x86)\Microchip\xc8\v2.05\pic\sources\c99\common\ftsub.c
+[v ___ftsub __ftsub `(f  1 e 4 0 ]
+"10 C:\Program Files (x86)\Microchip\xc8\v2.05\pic\sources\c99\common\sprcadd.c
+[v ___fladd __fladd `(d  1 e 4 0 ]
+"245
+[v ___flsub __flsub `(d  1 e 4 0 ]
+"11 C:\Program Files (x86)\Microchip\xc8\v2.05\pic\sources\c99\common\sprcdiv.c
+[v ___fldiv __fldiv `(d  1 e 4 0 ]
+"8 C:\Program Files (x86)\Microchip\xc8\v2.05\pic\sources\c99\common\sprcmul.c
+[v ___flmul __flmul `(d  1 e 4 0 ]
+"15 C:\Program Files (x86)\Microchip\xc8\v2.05\pic\sources\c99\common\Umul32.c
+[v ___lmul __lmul `(ul  1 e 4 0 ]
+"91 C:\Program Files (x86)\Microchip\xc8\v2.05\pic\sources\c99\common\Umul64.c
+[v ___omul __omul `(uo  1 e 8 0 ]
+"58 C:\Users\sageh\Documents\5067\Exam2Test\Exam2_Test.X\lab5b_xc8_orig.c
+[v _main main `(v  1 e 1 0 ]
+"72
+[v _Initial Initial `(v  1 e 1 0 ]
+"107
+[v _HiPriISR HiPriISR `IIH(v  1 e 1 0 ]
+"118
+[v _LoPriISR LoPriISR `IIL(v  1 e 1 0 ]
+"134
+[v _TMR0handler TMR0handler `(v  1 e 1 0 ]
+"9794 C:\Program Files (x86)\Microchip\xc8\v2.05\pic\include\pic18f87k22.h
+[v _LATC LATC `VEuc  1 e 1 @3979 ]
+"9906
+[v _LATD LATD `VEuc  1 e 1 @3980 ]
+"10656
+[v _TRISC TRISC `VEuc  1 e 1 @3988 ]
+"10718
+[v _TRISD TRISD `VEuc  1 e 1 @3989 ]
+[s S35 . 1 `uc 1 NOT_BOR 1 0 :1:0 
+]
+"16371
+[s S37 . 1 `uc 1 . 1 0 :1:0 
+`uc 1 NOT_POR 1 0 :1:1 
+]
+[s S40 . 1 `uc 1 . 1 0 :2:0 
+`uc 1 NOT_PD 1 0 :1:2 
+]
+[s S43 . 1 `uc 1 . 1 0 :3:0 
+`uc 1 NOT_TO 1 0 :1:3 
+]
+[s S46 . 1 `uc 1 . 1 0 :4:0 
+`uc 1 NOT_RI 1 0 :1:4 
+]
+[s S49 . 1 `uc 1 . 1 0 :5:0 
+`uc 1 NOT_CM 1 0 :1:5 
+]
+[s S52 . 1 `uc 1 nBOR 1 0 :1:0 
+`uc 1 nPOR 1 0 :1:1 
+`uc 1 nPD 1 0 :1:2 
+`uc 1 nTO 1 0 :1:3 
+`uc 1 nRI 1 0 :1:4 
+`uc 1 nCM 1 0 :1:5 
+`uc 1 SBOREN 1 0 :1:6 
+`uc 1 IPEN 1 0 :1:7 
+]
+[s S61 . 1 `uc 1 BOR 1 0 :1:0 
+`uc 1 POR 1 0 :1:1 
+`uc 1 PD 1 0 :1:2 
+`uc 1 TO 1 0 :1:3 
+`uc 1 RI 1 0 :1:4 
+`uc 1 CM 1 0 :1:5 
+]
+[u S68 . 1 `S35 1 . 1 0 `S37 1 . 1 0 `S40 1 . 1 0 `S43 1 . 1 0 `S46 1 . 1 0 `S49 1 . 1 0 `S52 1 . 1 0 `S61 1 . 1 0 ]
+[v _RCONbits RCONbits `VES68  1 e 1 @4048 ]
+"16722
+[v _T0CON T0CON `VEuc  1 e 1 @4053 ]
+[s S201 . 1 `uc 1 T0PS 1 0 :3:0 
+`uc 1 PSA 1 0 :1:3 
+`uc 1 T0SE 1 0 :1:4 
+`uc 1 T0CS 1 0 :1:5 
+`uc 1 T08BIT 1 0 :1:6 
+`uc 1 TMR0ON 1 0 :1:7 
+]
+"16742
+[s S208 . 1 `uc 1 T0PS0 1 0 :1:0 
+`uc 1 T0PS1 1 0 :1:1 
+`uc 1 T0PS2 1 0 :1:2 
+]
+[u S212 . 1 `S201 1 . 1 0 `S208 1 . 1 0 ]
+[v _T0CONbits T0CONbits `VES212  1 e 1 @4053 ]
+"16799
+[v _TMR0L TMR0L `VEuc  1 e 1 @4054 ]
+"16819
+[v _TMR0H TMR0H `VEuc  1 e 1 @4055 ]
+[s S111 . 1 `uc 1 . 1 0 :7:0 
+`uc 1 NOT_RBPU 1 0 :1:7 
+]
+"17479
+[s S114 . 1 `uc 1 RBIP 1 0 :1:0 
+`uc 1 INT3IP 1 0 :1:1 
+`uc 1 TMR0IP 1 0 :1:2 
+`uc 1 INTEDG3 1 0 :1:3 
+`uc 1 INTEDG2 1 0 :1:4 
+`uc 1 INTEDG1 1 0 :1:5 
+`uc 1 INTEDG0 1 0 :1:6 
+`uc 1 nRBPU 1 0 :1:7 
+]
+[s S123 . 1 `uc 1 . 1 0 :1:0 
+`uc 1 INT3P 1 0 :1:1 
+`uc 1 T0IP 1 0 :1:2 
+`uc 1 . 1 0 :4:3 
+`uc 1 RBPU 1 0 :1:7 
+]
+[u S129 . 1 `S111 1 . 1 0 `S114 1 . 1 0 `S123 1 . 1 0 ]
+[v _INTCON2bits INTCON2bits `VES129  1 e 1 @4081 ]
+[s S152 . 1 `uc 1 RBIF 1 0 :1:0 
+`uc 1 INT0IF 1 0 :1:1 
+`uc 1 TMR0IF 1 0 :1:2 
+`uc 1 RBIE 1 0 :1:3 
+`uc 1 INT0IE 1 0 :1:4 
+`uc 1 TMR0IE 1 0 :1:5 
+`uc 1 PEIE_GIEL 1 0 :1:6 
+`uc 1 GIE_GIEH 1 0 :1:7 
+]
+"17576
+[s S161 . 1 `uc 1 . 1 0 :1:0 
+`uc 1 INT0F 1 0 :1:1 
+`uc 1 T0IF 1 0 :1:2 
+`uc 1 . 1 0 :1:3 
+`uc 1 INT0E 1 0 :1:4 
+`uc 1 T0IE 1 0 :1:5 
+`uc 1 PEIE 1 0 :1:6 
+`uc 1 GIE 1 0 :1:7 
+]
+[s S170 . 1 `uc 1 . 1 0 :6:0 
+`uc 1 GIEL 1 0 :1:6 
+`uc 1 GIEH 1 0 :1:7 
+]
+[u S174 . 1 `S152 1 . 1 0 `S161 1 . 1 0 `S170 1 . 1 0 ]
+[v _INTCONbits INTCONbits `VES174  1 e 1 @4082 ]
+"58 C:\Users\sageh\Documents\5067\Exam2Test\Exam2_Test.X\lab5b_xc8_orig.c
+[v _main main `(v  1 e 1 0 ]
+{
+"63
+} 0
+"72
+[v _Initial Initial `(v  1 e 1 0 ]
+{
+"98
+} 0
+"118
+[v _LoPriISR LoPriISR `IIL(v  1 e 1 0 ]
+{
+"127
+} 0
+"134
+[v _TMR0handler TMR0handler `(v  1 e 1 0 ]
+{
+"142
+} 0
+"107
+[v _HiPriISR HiPriISR `IIH(v  1 e 1 0 ]
+{
+"110
+} 0

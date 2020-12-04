@@ -1,4 +1,4 @@
-# 1 "lab6partA.c"
+# 1 "Trozinski_Herrin_Lab6.c"
 # 1 "<built-in>" 1
 # 1 "<built-in>" 3
 # 288 "<built-in>" 3
@@ -6,8 +6,8 @@
 # 1 "<built-in>" 2
 # 1 "C:\\Program Files (x86)\\Microchip\\xc8\\v2.05\\pic\\include\\language_support.h" 1 3
 # 2 "<built-in>" 2
-# 1 "lab6partA.c" 2
-# 55 "lab6partA.c"
+# 1 "Trozinski_Herrin_Lab6.c" 2
+# 54 "Trozinski_Herrin_Lab6.c"
 # 1 "C:\\Program Files (x86)\\Microchip\\xc8\\v2.05\\pic\\include\\xc.h" 1 3
 # 18 "C:\\Program Files (x86)\\Microchip\\xc8\\v2.05\\pic\\include\\xc.h" 3
 extern const char __xc8_OPTIM_SPEED;
@@ -11063,7 +11063,7 @@ extern __attribute__((nonreentrant)) void _delaywdt(unsigned long);
 #pragma intrinsic(_delay3)
 extern __attribute__((nonreentrant)) void _delay3(unsigned char);
 # 32 "C:\\Program Files (x86)\\Microchip\\xc8\\v2.05\\pic\\include\\xc.h" 2 3
-# 56 "lab6partA.c" 2
+# 55 "Trozinski_Herrin_Lab6.c" 2
 # 1 "./LCDroutinesEasyPic.h" 1
 # 56 "./LCDroutinesEasyPic.h"
 void InitLCD( void );
@@ -11071,7 +11071,7 @@ void InitLCD( void );
 void DisplayC( const char *LCDStr );
 # 78 "./LCDroutinesEasyPic.h"
 void DisplayV( const char *LCDStr );
-# 57 "lab6partA.c" 2
+# 56 "Trozinski_Herrin_Lab6.c" 2
 # 1 "C:\\Program Files (x86)\\Microchip\\xc8\\v2.05\\pic\\include\\c99\\string.h" 1 3
 # 25 "C:\\Program Files (x86)\\Microchip\\xc8\\v2.05\\pic\\include\\c99\\string.h" 3
 # 1 "C:\\Program Files (x86)\\Microchip\\xc8\\v2.05\\pic\\include\\c99\\bits/alltypes.h" 1 3
@@ -11127,7 +11127,7 @@ size_t strxfrm_l (char *restrict, const char *restrict, size_t, locale_t);
 
 
 void *memccpy (void *restrict, const void *restrict, int, size_t);
-# 58 "lab6partA.c" 2
+# 57 "Trozinski_Herrin_Lab6.c" 2
 # 1 "C:\\Program Files (x86)\\Microchip\\xc8\\v2.05\\pic\\include\\c99\\stdio.h" 1 3
 # 24 "C:\\Program Files (x86)\\Microchip\\xc8\\v2.05\\pic\\include\\c99\\stdio.h" 3
 # 1 "C:\\Program Files (x86)\\Microchip\\xc8\\v2.05\\pic\\include\\c99\\bits/alltypes.h" 1 3
@@ -11264,7 +11264,8 @@ char *ctermid(char *);
 
 
 char *tempnam(const char *, const char *);
-# 59 "lab6partA.c" 2
+# 58 "Trozinski_Herrin_Lab6.c" 2
+
 
 
 
@@ -11277,12 +11278,55 @@ char *tempnam(const char *, const char *);
 
 const char LCDRow1[] = {0x80,'T','E','S','T','I','N','G','!',0x00};
 unsigned int Alive_count = 0;
+unsigned long ccp1count = 400000;
+unsigned int TMR1X = 0;
+unsigned int CCPR1X = 0;
+unsigned int LM35channel = 0b00011;
+unsigned int P2channel = 0b00000;
+unsigned int samplecount = 0;
+unsigned int ADresult;
+unsigned int LM35result;
+unsigned int ONcount;
+unsigned int OFFcount;
+unsigned int LEDcount;
+float Temp;
+float Potential;
+unsigned int P2result;
+unsigned int wregtemp = 0;
+unsigned int done = 0;
+float Cscalefactor = 0.080566;
+float vscalefactor = 0.00080566;
+char temperature[10];
+char voltage[10];
+unsigned char throwout;
+char RBuffer[20];
+char TBuffer[20];
+unsigned int bcount = 0;
+unsigned int tcount = 0;
+unsigned int commandready = 0;
+unsigned int continuousMode = 0;
+unsigned int transmittime = 0;
+char garbage;
+unsigned int binnum = 0x3000;
+char inc = 1;
+char dec = 0;
+
+
 
 
 
 
 void Initial(void);
 void TMR0handler(void);
+void sample(void);
+void tempC(void);
+void volts(void);
+void LEDhandler(void);
+void transmit(void);
+void receive(void);
+void decoder(void);
+void SPItransmission(void);
+
 
 
 
@@ -11290,10 +11334,34 @@ void TMR0handler(void);
 void main() {
      Initial();
       while(1) {
-# 101 "lab6partA.c"
+
+
+        ADCON0bits.CHS = LM35channel;
+        sample();
+        LM35result = ADresult;
+
+        ADCON0bits.CHS = P2channel;
+        sample();
+        P2result = ADresult;
+
+
+        tempC();
+
+        volts();
+
+        DisplayC(temperature);
+        DisplayC(voltage);
+
+        if(commandready == 1){
+            decoder();
+        }
+
+        if(continuousMode == 1){
+            decoder();
+        }
      }
 }
-# 111 "lab6partA.c"
+# 162 "Trozinski_Herrin_Lab6.c"
 void Initial() {
 
     BSR = 0x0F;
@@ -11302,6 +11370,9 @@ void Initial() {
     LATD = 0;
     TRISC = 0b10010011;
     LATC = 0;
+    TRISA = 0b00101001;
+    TRISEbits.TRISE0 = 0;
+
 
 
     TRISBbits.TRISB4 = 0;
@@ -11318,21 +11389,22 @@ void Initial() {
 
 
 
-    ANCON0 = 0xFF;
-    ANCON1 = 0xFF;
-    ANCON2 = 0xFF;
 
-    TRISAbits.TRISA0 = 1;
-    TRISAbits.TRISA3 = 1;
-
-
-    ADCON1bits.VCFG = 0b00;
-    ADCON1bits.VNCFG = 0b0;
-    ADCON1bits.CHSN = 0b000;
+    ANCON0 = 0x0F;
+    ANCON0bits.ANSEL4 = 1;
+    ANCON1 = 0x00;
+    ANCON2 = 0x00;
 
 
-    ADCON0bits.CHS = 0b00011;
-    ADCON0bits.CHS = 0b00000;
+
+
+
+    ADCON1 = 0b00000000;
+
+
+
+
+    ADCON0 = 0b00001101;
 
     ADCON2bits.ADFM = 0b1;
 
@@ -11341,12 +11413,29 @@ void Initial() {
     ADCON2bits.ACQT = 0b010;
 
     ADCON2bits.ADCS = 0b101;
+    ADCON2 = 0b10010101;
+
+    PIR1bits.ADIF = 0;
+    PIE1bits.ADIE = 0;
+    IPR1bits.ADIP = 0;
 
 
 
-    T0CON = 0b01001000;
+    LEDcount = 0;
+    ONcount = 3036;
+    OFFcount = 3036;
+
+
+    T0CON = 0b00000100;
     TMR0L = 0;
     TMR0H = 0;
+
+
+    T1CON = 0b00000010;
+    PIR1bits.TMR1IF = 0;
+    IPR1bits.TMR1IP = 0;
+    PIE1bits.TMR1IE = 1;
+    TMR1 = 63692;
 
 
     RCONbits.IPEN = 1;
@@ -11358,20 +11447,43 @@ void Initial() {
 
     T0CONbits.TMR0ON = 1;
 
+    LATD = 0b00000000;
+    while( LEDcount < 4){}
 
-    T1CON = 0b00000011;
-    CCP1CON = 0b00001010;
-    CCPTMRS0 = 0b00000000;
-
-    IPR1bits.TMR1IP = 0;
-    IPR3bits.CCP1IP = 0;
-
-    unsigned int TMR1X = 0;
+    T0CONbits.T0PS = 0b101;
+    ONcount = 59300;
+    OFFcount = 9272;
+    LATDbits.LATD4 = 0b0;
 
 
 
 
 
+    TXSTA1bits.SYNC = 0b0;
+    TXSTA1bits.BRGH = 0b1;
+    TXSTA1bits.TXEN = 0b1;
+
+    SPBRG = 51;
+
+    RCSTA1bits.SPEN = 0b1;
+    RCSTA1bits.CREN = 0b1;
+
+    IPR1bits.RC1IP = 0b0;
+    IPR1bits.TX1IP = 0b0;
+    PIE1bits.RC1IE = 0b1;
+    PIE1bits.TX1IE = 0b0;
+
+
+
+
+    BAUDCON1bits.BRG16 = 0b0;
+
+    SSP1CON1 = 0b00100000;
+    SSP1STAT = 0x00;
+    SSP1STATbits.SMP = 1;
+    SSP1STATbits.CKE = 1;
+
+    T1CONbits.TMR1ON = 1;
 
 
 }
@@ -11385,19 +11497,33 @@ void Initial() {
 void __attribute__((picinterrupt(("")))) HiPriISR(void) {
 
 }
-# 210 "lab6partA.c"
+# 306 "Trozinski_Herrin_Lab6.c"
 void __attribute__((picinterrupt(("low_priority")))) LoPriISR(void)
 {
 
+    wregtemp = WREG;
     while(1) {
         if( INTCONbits.TMR0IF ) {
             TMR0handler();
+            continue;
+        }
+        if(PIR1bits.RC1IF ) {
 
+            receive();
+            PIR1bits.RC1IF = 0b0;
+            continue;
+        }
+        if(PIR1bits.TMR1IF){
 
-
+            SPItransmission();
+            PIR1bits.TMR1IF = 0;
+            TMR1 = 63692;
             continue;
         }
 
+
+
+            WREG = wregtemp;
         break;
     }
 }
@@ -11409,10 +11535,269 @@ void __attribute__((picinterrupt(("low_priority")))) LoPriISR(void)
 
 
 void TMR0handler() {
-    if( Alive_count < 4880 ) { Alive_count++; }
-    else {
-        LATDbits.LATD4 = ~LATDbits.LATD4;
-        Alive_count = 0;
+    LEDhandler();
+    if( !LATDbits.LATD4){
+        TMR0L = ONcount&0xFF;
+        TMR0H = (ONcount>>8)&0xFF;
+        if(continuousMode == 1){
+            transmittime = 1;
+        }
+    }
+    else{
+        TMR0L = OFFcount&0xFF;
+        TMR0H = (OFFcount>>8)&0xFF;
     }
     INTCONbits.TMR0IF = 0;
+}
+
+
+
+
+
+
+void SPItransmission(){
+
+
+
+    LATEbits.LATE0 = 0;
+
+    SSP1BUF = (binnum>>8)|0b00110000;
+
+    while(!SSP1STATbits.BF){}
+
+    garbage = SSP1BUF;
+
+    SSP1BUF = binnum;
+
+    while(!SSP1STATbits.BF){}
+    garbage = SSP1BUF;
+    LATEbits.LATE0 = 1;
+
+    if(inc & (binnum >= 0x3FFE)){
+        inc = 0;
+        dec = 1;
+}
+    if(dec & (binnum <= 0x3000)){
+        inc = 1;
+        dec = 0;
+    }
+    if(inc){
+        binnum += 2;
+    }
+    if(dec){
+        binnum -= 2;
+    }
+}
+# 404 "Trozinski_Herrin_Lab6.c"
+void LEDhandler(){
+    if ( LEDcount > 3){
+        LATDbits.LATD4 = ~LATDbits.LATD4;
+    }
+    else if ( LEDcount == 3){
+        LATD = 0b00010000;
+        LEDcount = 7;
+    }
+    else if ( LEDcount == 2){
+        LATD = 0b10000000;
+        LEDcount++;
+    }
+    else if ( LEDcount == 1){
+        LATD = 0b01000000;
+        LEDcount++;
+    }
+    else if ( LEDcount == 0){
+        LATD = 0b00100000;
+        LEDcount++;
+    }
+    else {
+        LATD = 0b11110000;
+    }
+
+}
+# 438 "Trozinski_Herrin_Lab6.c"
+void sample()
+{
+
+    for(samplecount = 0; samplecount<3; samplecount++) {
+
+        _delay((unsigned long)((50)*(16000000/4000000.0)));
+
+        ADCON0bits.GO = 1;
+
+
+
+        while(ADCON0bits.GO);
+        _delay((unsigned long)((50)*(16000000/4000000.0)));
+
+
+
+
+        ADresult = ADRES;
+    }
+
+}
+
+
+
+
+
+
+void tempC()
+{
+
+
+
+
+
+
+    Temp = Cscalefactor * LM35result;
+
+    sprintf(temperature, " T=%0.1fC ", Temp);
+    temperature[0] = 0x80;
+
+
+
+}
+
+
+void volts()
+{
+
+
+    Potential = P2result * vscalefactor;
+    sprintf(voltage," PT=%0.2fV",Potential);
+    voltage[0] = 0xC0;
+}
+
+
+
+
+
+
+void transmit(){
+    LATDbits.LATD7 = 0b1;
+    while(tcount <= 18){
+        while(PIR1bits.TX1IF == 0){}
+        if(TBuffer[tcount] != 0x00){
+            TXREG1 = TBuffer[tcount];
+
+            _delay((unsigned long)((2)*(16000000/4000000.0)));
+        }
+        if(TBuffer[tcount] == 0x00){
+            tcount = 18;
+        }
+        tcount++;
+    }
+
+
+
+
+}
+
+
+
+
+
+
+void receive(){
+
+
+    if( commandready > 0){
+        commandready = 0;
+
+        memset(RBuffer, 0, sizeof(RBuffer));
+    }
+    if( RCSTA1bits.FERR == 1){
+        throwout = RCREG1;
+        return;
+    }
+    if( RCSTA1bits.OERR == 1){
+        RCSTA1bits.CREN = 0;
+        RCSTA1bits.CREN = 1;
+        return;
+    }
+
+    RBuffer[bcount] = RCREG1;
+    if(RBuffer[bcount] == 0x0A){
+
+        bcount = 0;
+        commandready++;
+    }
+    else {
+        bcount ++;
+    }
+
+}
+
+
+
+
+
+
+
+void decoder(){
+
+
+    memset(TBuffer, 0, sizeof(TBuffer));
+    if(strncmp(RBuffer,"TEMP",4)==0){
+
+        TBuffer[0] = temperature[3];
+        TBuffer[1] = temperature[4];
+        TBuffer[2] = temperature[5];
+        TBuffer[3] = temperature[6];
+        TBuffer[4] = temperature[7];
+        TBuffer[5] = 0x00;
+        TBuffer[6] = 0x00;
+        TBuffer[7] = 0x00;
+        TBuffer[8] = 0x00;
+        TBuffer[9] = 0x00;
+    }
+    if(strncmp(RBuffer,"POT",3)==0){
+
+        TBuffer[0] = voltage[4];
+        TBuffer[1] = voltage[5];
+        TBuffer[2] = voltage[6];
+        TBuffer[3] = voltage[7];
+        TBuffer[4] = voltage[8];
+        TBuffer[5] = 0x00;
+        TBuffer[6] = 0x00;
+        TBuffer[7] = 0x00;
+        TBuffer[8] = 0x00;
+        TBuffer[9] = 0x00;
+    }
+
+
+    tcount = 0;
+    if(strncmp(RBuffer,"CONT_ON",7)==0){
+        continuousMode = 1;
+    }
+    if(strncmp(RBuffer,"CONT_OFF",8)==0){
+        continuousMode = 0;
+    }
+    if(transmittime==1){
+
+        TBuffer[0] = temperature[1];
+        TBuffer[1] = temperature[2];
+        TBuffer[2] = temperature[3];
+        TBuffer[3] = temperature[4];
+        TBuffer[4] = temperature[5];
+        TBuffer[5] = temperature[6];
+        TBuffer[6] = temperature[7];
+        TBuffer[7] = 0x3B;
+        TBuffer[8] = 0x20;
+        TBuffer[9] = voltage[1];
+        TBuffer[10] = voltage[2];
+        TBuffer[11] = voltage[3];
+        TBuffer[12] = voltage[4];
+        TBuffer[13] = voltage[5];
+        TBuffer[14] = voltage[6];
+        TBuffer[15] = voltage[7];
+        TBuffer[16] = voltage[8];
+        TBuffer[17] = 0x0A;
+        TBuffer[18] = 0x00;
+        transmittime = 0;
+    }
+    transmit();
+
+    commandready = 0;
 }
